@@ -6,6 +6,9 @@
 <meta name="theme-color" content="#090d16" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
+<link rel="manifest" href="./manifest.json" />
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+<link rel="apple-touch-icon" href="./icon-192.png" />
 <title>🔥 Рекомпозиция Pro v4: Дневник Тренировок</title>
 <style>
   :root {
@@ -1149,6 +1152,12 @@ loadState();
 initSelectors();
 renderWorkout();
 document.getElementById("gasUrlInp").value = state.gasUrl || "";
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
