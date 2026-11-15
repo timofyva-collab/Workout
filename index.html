@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#090d16" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<title>🔥 Рекомпозиция Pro v4: Дневник Тренировок</title>
+<style>
+  :root {
+    --bg: #090d16;
+    --card: #121826;
+    --card2: #1a2234;
+    --border: #263147;
+    --text: #f3f4f6;
+    --muted: #9ca3af;
+    --accent: #f97316;
+    --accent2: #fb923c;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --red: #ef4444;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; padding: 0 0 88px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text);
+    overflow-x: hidden; width: 100%;
+  }
+  header {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(9, 13, 22, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
+  }
+  .brand { font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .top-actions { display: flex; align-items: center; gap: 6px; }
+  .pill-btn {
+    background: var(--card2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 999px;
+    padding: 6px 9px; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap;
+  }
+  .pill-btn.active { border-color: var(--green); color: var(--green); }
+  .timer-pill {
+    background: #1e293b; border: 1px solid var(--accent);
+    color: var(--accent2); padding: 6px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;
+  }
+  .container { width: 100%; max-width: 600px; margin: 0 auto; padding: 10px; }
+  .selector-bar {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 10px; margin-bottom: 10px;
+  }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .month-row { display: flex; gap: 6px; align-items: center; }
+  select, input[type="text"], input[type="number"] {
+    background: var(--card2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 8px 10px; font-size: 14px; width: 100%;
+    outline: none;
+  }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none; margin: 0;
+  }
+  input[type=number] { -moz-appearance: textfield; }
+  .btn-add-month {
+    background: rgba(249, 115, 22, 0.16);
+    border: 1px solid var(--accent);
+    color: var(--accent2);
+    border-radius: 10px;
+    padding: 8px 11px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .tabs-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 8px;
+  }
+  .chip {
+    background: var(--card2); border: 1px solid var(--border);
+    color: var(--muted); border-radius: 10px; padding: 7px 3px;
+    text-align: center; font-size: 11px; font-weight: 700; cursor: pointer;
+    line-height: 1.2;
+  }
+  .chip span { display: block; font-size: 10px; font-weight: 500; opacity: 0.85; margin-top: 2px; }
+  .chip.active {
+    background: rgba(249, 115, 22, 0.18);
+    border-color: var(--accent); color: var(--text);
+  }
+  .summary-strip {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px;
+  }
+  .stat-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 7px 6px; text-align: center;
+  }
+  .stat-val { font-size: 15px; font-weight: 800; color: var(--accent2); }
+  .stat-lbl { font-size: 10px; color: var(--muted); }
+  .ex-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 10px; margin-bottom: 10px;
+    width: 100%; overflow: hidden;
+  }
+  .ex-head {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 6px;
+  }
+  .ex-title { font-size: 15px; font-weight: 800; margin: 0 0 3px 0; }
+  .ex-meta { font-size: 11px; color: var(--muted); }
+  .rec-badge {
+    margin: 7px 0; padding: 7px 9px; border-radius: 10px;
+    font-size: 11.5px; font-weight: 600; line-height: 1.35;
+    background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); color: #6ee7b7;
+  }
+  .rec-badge.warn {
+    background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.35); color: #fcd34d;
+  }
+  .rec-badge.deload {
+    background: rgba(59, 130, 246, 0.12); border-color: rgba(59, 130, 246, 0.35); color: #93c5fd;
+  }
+
+  /* COMPACT MOBILE GRID FOR SETS - FITS ANY PORTRAIT SCREEN WITHOUT HORIZONTAL SCROLL */
+  .sets-header {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1.35fr) minmax(0, 1.15fr) 44px 40px;
+    gap: 5px;
+    align-items: center;
+    padding: 2px 2px 5px 2px;
+    font-size: 10.5px;
+    color: var(--muted);
+    font-weight: 700;
+    text-align: center;
+  }
+  .set-row-grid {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1.35fr) minmax(0, 1.15fr) 44px 40px;
+    gap: 5px;
+    align-items: center;
+    padding: 5px 2px;
+    border-radius: 10px;
+    margin-bottom: 4px;
+    background: rgba(26, 34, 52, 0.45);
+    border: 1px solid transparent;
+  }
+  .set-row-grid.done {
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(16, 185, 129, 0.4);
+  }
+  .set-num {
+    background: var(--card2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; height: 34px;
+    font-size: 11px; font-weight: 800; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    user-select: none;
+  }
+  .stepper {
+    display: flex; align-items: center; width: 100%;
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 8px; height: 34px; overflow: hidden;
+  }
+  .step-btn {
+    background: transparent; border: none; color: var(--accent2);
+    width: 25px; height: 100%; font-size: 15px; font-weight: 800;
+    cursor: pointer; padding: 0; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step-btn:active { background: rgba(249, 115, 22, 0.2); }
+  .set-inp {
+    background: transparent !important; border: none !important;
+    color: var(--text) !important; text-align: center;
+    padding: 0 !important; font-weight: 800; font-size: 13.5px !important;
+    width: 100% !important; min-width: 0 !important; height: 100%;
+  }
+  .rpe-inp {
+    background: var(--card2) !important; border: 1px solid var(--border) !important;
+    border-radius: 8px !important; height: 34px; text-align: center;
+    padding: 0 2px !important; font-weight: 700; font-size: 13px !important;
+    width: 100% !important; color: var(--text) !important;
+  }
+  .check-btn {
+    background: var(--card2); border: 1.5px solid var(--border); color: var(--muted);
+    border-radius: 9px; width: 40px; height: 34px; font-size: 16px; font-weight: 900;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    padding: 0; flex-shrink: 0;
+  }
+  .check-btn.done {
+    background: var(--green); border-color: var(--green); color: #042f1e;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+  }
+  .set-controls {
+    display: flex; justify-content: space-between; align-items: center; margin-top: 8px; gap: 6px;
+  }
+  .btn-sm {
+    background: var(--card2); border: 1px solid var(--border); color: var(--text);
+    padding: 6px 9px; border-radius: 8px; font-size: 11.5px; font-weight: 600; cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--accent); border: none; color: #fff;
+    padding: 10px 14px; border-radius: 10px; font-size: 14px; font-weight: 700;
+    cursor: pointer; width: 100%;
+  }
+  /* CHARTS */
+  .chart-wrap {
+    background: #0b101d;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 8px 6px 8px;
+    margin-top: 10px;
+  }
+  .chart-legend {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    font-size: 11px; color: var(--muted); margin-bottom: 6px; font-weight: 600;
+  }
+  .legend-dot {
+    display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px;
+  }
+  .mode-pills {
+    display: flex; gap: 6px; margin-top: 8px;
+  }
+  .mode-pill {
+    flex: 1; background: var(--card2); border: 1px solid var(--border);
+    color: var(--muted); padding: 6px 8px; border-radius: 8px;
+    font-size: 11px; font-weight: 700; text-align: center; cursor: pointer;
+  }
+  .mode-pill.active {
+    border-color: var(--accent); color: var(--text); background: rgba(249, 115, 22, 0.16);
+  }
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 60;
+    background: rgba(18, 24, 38, 0.96); backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border);
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    padding: 6px 8px;
+  }
+  .nav-item {
+    background: none; border: none; color: var(--muted);
+    padding: 6px 2px; font-size: 11px; font-weight: 700; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .nav-item.active { color: var(--accent); }
+  .view { display: none; }
+  .view.active { display: block; }
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+    display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 16px; width: 100%; max-width: 420px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">🔥 Рекомпозиция Pro <span style="font-size:11px; color:var(--accent2); font-weight:600;">(Старт 16.11)</span></div>
+  <div class="top-actions">
+    <button id="wakeBtn" class="pill-btn" onclick="toggleWakeLock()">💡 Экран: АВТО</button>
+    <div id="timerPill" class="timer-pill" onclick="toggleTimer(90)">⏱ 01:30</div>
+  </div>
+</header>
+
+<div class="container">
+  <!-- VIEW 1: WORKOUT -->
+  <div id="view-workout" class="view active">
+    <div class="selector-bar">
+      <div class="month-row">
+        <select id="monthSelect" onchange="onFilterChange()"></select>
+        <button type="button" class="btn-add-month" onclick="openAddMonthModal()">+ Месяц</button>
+      </div>
+      <div class="tabs-row" id="weekTabs"></div>
+      <div class="tabs-row" id="dayTabs"></div>
+    </div>
+
+    <div class="summary-strip">
+      <div class="stat-box">
+        <div class="stat-val" id="statSets">0 / 0</div>
+        <div class="stat-lbl">Подходы</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="statTonnage">0 кг</div>
+        <div class="stat-lbl">Тоннаж дня</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="statQueue">0</div>
+        <div class="stat-lbl">В очереди синхр.</div>
+      </div>
+    </div>
+
+    <div id="exercisesList"></div>
+    <button type="button" class="btn-sm" style="width:100%; padding:10px; margin-bottom:12px;" onclick="openAddExerciseModal()">+ Добавить упражнение в этот день</button>
+  </div>
+
+  <!-- VIEW 2: PROGRESS & CHARTS -->
+  <div id="view-progress" class="view">
+    <div class="ex-card">
+      <h3 style="margin:0 0 8px 0;">📊 Диаграмма прогресса по упражнению</h3>
+      <select id="progExSelect" onchange="renderProgressView()"></select>
+      <div class="mode-pills">
+        <div id="modePlanVsFact" class="mode-pill active" onclick="setProgChartMode('all')">План по месяцам + Факт</div>
+        <div id="modeFactOnly" class="mode-pill" onclick="setProgChartMode('logs')">Только мои записи</div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-legend">
+          <span><i class="legend-dot" style="background:#f97316;"></i>Рабочий вес (кг)</span>
+          <span><i class="legend-dot" style="background:#10b981;"></i>Тоннаж за трен. (кг)</span>
+        </div>
+        <div id="progChartSvg"></div>
+      </div>
+      <div id="progStats" style="margin-top:10px; font-size:12.5px; color:var(--muted);"></div>
+      <div id="progHistory" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <!-- VIEW 3: BODY METRICS & CHART -->
+  <div id="view-body" class="view">
+    <div class="ex-card">
+      <h3 style="margin:0 0 10px 0;">⚖️ Вес тела и % жира (Цель: 75.0 кг)</h3>
+      <div class="row" style="margin-bottom:8px;">
+        <input type="number" step="0.1" id="inpBodyWeight" placeholder="Вес (кг), напр. 82.0" style="flex:1;" />
+        <input type="number" step="0.1" id="inpBodyFat" placeholder="% жира, напр. 37.5" style="flex:1;" />
+      </div>
+      <button class="btn-primary" onclick="saveBodyMetric()">+ Записать замер</button>
+
+      <div class="chart-wrap">
+        <div class="chart-legend">
+          <span><i class="legend-dot" style="background:#3b82f6;"></i>Вес (кг)</span>
+          <span><i class="legend-dot" style="background:#f59e0b;"></i>% Жира</span>
+          <span><i class="legend-dot" style="background:#10b981;"></i>Сухая масса (кг)</span>
+        </div>
+        <div id="bodyChartSvg"></div>
+      </div>
+
+      <div id="bodyList" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+  <!-- VIEW 4: SYNC & INSTALL -->
+  <div id="view-sync" class="view">
+    <div class="ex-card">
+      <h3 style="margin:0 0 8px 0;">📅 Управление месяцами и планом</h3>
+      <p style="font-size:12.5px; color:var(--muted); margin-top:0;">
+        Вы можете создавать новые месяцы (например, <b>Октябрь 2027</b>, <b>Ноябрь 2027</b>) с клонированием упражнений и автоматической прибавкой рабочих весов.
+      </p>
+      <div class="row" style="gap:8px;">
+        <button class="btn-primary" onclick="openAddMonthModal()">+ Создать новый месяц</button>
+        <button class="btn-sm" style="width:100%; padding:10px;" onclick="downloadSelfHtml()">💾 Скачать актуальный .HTML</button>
+        <button class="btn-sm" style="width:100%; padding:10px;" onclick="resetPlanToDefault()">🔄 Сбросить базовые 12 мес. к таблице</button>
+      </div>
+    </div>
+
+    <div class="ex-card">
+      <h3 style="margin:0 0 8px 0;">🔗 Синхронизация с Google Таблицей</h3>
+      <p style="font-size:12px; color:var(--muted); margin-top:0;">
+        Вставьте URL веб-приложения Google Apps Script вашей таблицы:
+      </p>
+      <input type="text" id="gasUrlInp" placeholder="https://script.google.com/macros/s/.../exec" onchange="saveGasUrl()" />
+      <div class="row" style="margin-top:10px;">
+        <button class="btn-primary" onclick="flushSyncQueue()">☁️ Выгрузить подходы в Таблицу</button>
+      </div>
+      <p id="syncStatus" style="font-size:12px; color:var(--green); margin:8px 0 0 0;"></p>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT EXERCISE MODAL -->
+<div id="editModal" class="modal-backdrop">
+  <div class="modal">
+    <h3 style="margin:0 0 10px 0;" id="editModalTitle">🔄 Заменить упражнение / план</h3>
+    <input type="hidden" id="editExId" />
+    <label style="font-size:12px; color:var(--muted);">Название упражнения</label>
+    <input type="text" id="editExName" style="margin-bottom:8px;" />
+    <label style="font-size:12px; color:var(--muted);">План на Неделю 1 (напр. 4x8 @ 70 кг)</label>
+    <input type="text" id="editExW1" style="margin-bottom:6px;" />
+    <label style="font-size:12px; color:var(--muted);">План на Неделю 2 (напр. 4x8 @ 72.5 кг)</label>
+    <input type="text" id="editExW2" style="margin-bottom:6px;" />
+    <label style="font-size:12px; color:var(--muted);">План на Неделю 3 (напр. 4x6 @ 75 кг)</label>
+    <input type="text" id="editExW3" style="margin-bottom:6px;" />
+    <label style="font-size:12px; color:var(--muted);">План на Неделю 4 — Разгрузка (напр. 3x8 @ 55 кг)</label>
+    <input type="text" id="editExW4" style="margin-bottom:8px;" />
+    <label style="font-size:12px; color:var(--muted);">Шаг прогрессии весов (кг)</label>
+    <input type="number" step="0.5" id="editExStep" style="margin-bottom:12px;" />
+    <div class="row">
+      <button class="btn-primary" onclick="saveExerciseEdit()">Сохранить</button>
+      <button class="btn-sm" style="width:100%; padding:10px;" onclick="closeEditModal()">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MONTH MODAL -->
+<div id="addMonthModal" class="modal-backdrop">
+  <div class="modal">
+    <h3 style="margin:0 0 10px 0;">📅 Добавить новый месяц в план</h3>
+    <label style="font-size:12px; color:var(--muted);">Название нового месяца</label>
+    <input type="text" id="newMonthName" placeholder="Например: Октябрь 2027" style="margin-bottom:10px;" />
+    <label style="font-size:12px; color:var(--muted);">Взять упражнения за основу из месяца:</label>
+    <select id="templateMonthSelect" style="margin-bottom:10px;"></select>
+    <label style="font-size:12px; color:var(--muted);">Авто-прибавка к рабочим весам шаблона (кг):</label>
+    <input type="number" step="0.5" id="newMonthBump" value="2.5" style="margin-bottom:12px;" />
+    <div class="row">
+      <button class="btn-primary" onclick="confirmAddMonth()">Создать месяц (32 упр.)</button>
+      <button class="btn-sm" style="width:100%; padding:10px;" onclick="closeAddMonthModal()">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="switchView('workout', this)">🏋️<span>Тренировка</span></button>
+  <button class="nav-item" onclick="switchView('progress', this)">📊<span>Диаграммы</span></button>
+  <button class="nav-item" onclick="switchView('body', this)">⚖️<span>Вес и Жир</span></button>
+  <button class="nav-item" onclick="switchView('sync', this)">🔗<span>Синхр / План</span></button>
+</nav>
+
+<script>
+const DEFAULT_PLAN = [{"id": 1, "month": "Ноябрь 2026", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 2, "month": "Ноябрь 2026", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Жим гантелей лежа", "w1": "4x8 @ 26 кг", "w2": "4x8 @ 28 кг", "w3": "4x6 @ 30 кг", "w4": "3x8 @ 22 кг", "rpe": "8-9", "step": 2.0}, {"id": 3, "month": "Ноябрь 2026", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Тяга Т-грифа", "w1": "4x8 @ 60 кг", "w2": "4x8 @ 62.5 кг", "w3": "4x6 @ 65 кг", "w4": "3x8 @ 47.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 4, "month": "Ноябрь 2026", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Армейский жим", "w1": "4x10 @ 40 кг", "w2": "4x10 @ 42.5 кг", "w3": "4x8 @ 45 кг", "w4": "3x10 @ 32.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 5, "month": "Ноябрь 2026", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Тяга верхнего блока", "w1": "4x8", "w2": "4x8", "w3": "4x8", "w4": "3x8", "rpe": "8-9", "step": 2.5}, {"id": 6, "month": "Ноябрь 2026", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания с гантелями", "w1": "3x10 @ 14 кг", "w2": "3x10 @ 14 кг", "w3": "3x8 @ 16 кг", "w4": "2x10 @ 11 кг", "rpe": "8-9", "step": 2.0}, {"id": 7, "month": "Ноябрь 2026", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Шраги со штангой", "w1": "4x12 @ 70 кг", "w2": "4x12 @ 72.5 кг", "w3": "4x10 @ 75 кг", "w4": "3x12 @ 55 кг", "rpe": "8-9", "step": 2.5}, {"id": 8, "month": "Ноябрь 2026", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания запястий со штангой", "w1": "3x15 @ 21 кг", "w2": "3x15 @ 22.5 кг", "w3": "3x12 @ 25 кг", "w4": "2x15 @ 16 кг", "rpe": "8-9", "step": 2.0}, {"id": 9, "month": "Ноябрь 2026", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 10, "month": "Ноябрь 2026", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Жим штанги на наклонной", "w1": "4x10 @ 52.5 кг", "w2": "4x10 @ 55 кг", "w3": "4x8 @ 57.5 кг", "w4": "3x10 @ 40 кг", "rpe": "8-9", "step": 2.5}, {"id": 11, "month": "Ноябрь 2026", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Пуловер в блоке", "w1": "4x10 @ 50 кг", "w2": "4x10 @ 52.5 кг", "w3": "4x8 @ 55 кг", "w4": "3x10 @ 40 кг", "rpe": "8-9", "step": 2.0}, {"id": 12, "month": "Ноябрь 2026", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Тяга штанги к подбородку", "w1": "4x12 @ 22.5 кг", "w2": "4x12 @ 25 кг", "w3": "4x10 @ 27.5 кг", "w4": "3x12 @ 18 кг", "rpe": "8-9", "step": 2.5}, {"id": 13, "month": "Ноябрь 2026", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Жим лежа узким хватом", "w1": "3x10", "w2": "3x10", "w3": "3x10", "w4": "2x10", "rpe": "8-9", "step": 2.5}, {"id": 14, "month": "Ноябрь 2026", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Разгибания с канатом", "w1": "3x12 @ 22.5 кг", "w2": "3x12 @ 25 кг", "w3": "3x10 @ 27.5 кг", "w4": "2x12 @ 18 кг", "rpe": "8-9", "step": 2.0}, {"id": 15, "month": "Ноябрь 2026", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Шраги с гантелями", "w1": "4x12 @ 28 кг", "w2": "4x12 @ 30 кг", "w3": "4x10 @ 32 кг", "w4": "3x12 @ 22 кг", "rpe": "8-9", "step": 2.0}, {"id": 16, "month": "Ноябрь 2026", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Прогулка фермера", "w1": "3x30м @ 34 кг", "w2": "3x30м @ 34 кг", "w3": "3x30м @ 36 кг", "w4": "2x30м @ 24 кг", "rpe": "8-9", "step": 2.5}, {"id": 17, "month": "Ноябрь 2026", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 18, "month": "Ноябрь 2026", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Фронтальные приседания", "w1": "4x8 @ 65 кг", "w2": "4x8 @ 67.5 кг", "w3": "4x6 @ 70 кг", "w4": "3x8 @ 50 кг", "rpe": "8-9", "step": 2.5}, {"id": 19, "month": "Ноябрь 2026", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Мертвая тяга", "w1": "4x8 @ 80 кг", "w2": "4x8 @ 82.5 кг", "w3": "4x6 @ 85 кг", "w4": "3x8 @ 65 кг", "rpe": "8-9", "step": 2.5}, {"id": 20, "month": "Ноябрь 2026", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Выпады со штангой", "w1": "4x10 @ 30 кг", "w2": "4x10 @ 32.5 кг", "w3": "4x8 @ 35 кг", "w4": "3x10 @ 20 кг", "rpe": "8-9", "step": 2.0}, {"id": 21, "month": "Ноябрь 2026", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Сгибания ног сидя", "w1": "3x12 @ 36 кг", "w2": "3x12 @ 38.5 кг", "w3": "3x10 @ 41 кг", "w4": "2x12 @ 28 кг", "rpe": "8-9", "step": 2.0}, {"id": 22, "month": "Ноябрь 2026", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Икры в жиме ногами", "w1": "4x15 @ 60 кг", "w2": "4x15 @ 62.5 кг", "w3": "4x12 @ 65 кг", "w4": "3x15 @ 45 кг", "rpe": "8-9", "step": 2.0}, {"id": 23, "month": "Ноябрь 2026", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Скручивания на римском стуле", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 24, "month": "Ноябрь 2026", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Планка", "w1": "3x60 сек", "w2": "3x60 сек", "w3": "3x60 сек", "w4": "2x60 сек", "rpe": "8-9", "step": 0}, {"id": 25, "month": "Ноябрь 2026", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 26, "month": "Ноябрь 2026", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Становая тяга сумо", "w1": "4x7 @ 90 кг", "w2": "4x6 @ 94 кг", "w3": "4x5 @ 98 кг", "w4": "3x7 @ 75 кг", "rpe": "8-9", "step": 2.5}, {"id": 27, "month": "Ноябрь 2026", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Шагающие выпады", "w1": "3x10 @ 16 кг", "w2": "3x10 @ 18 кг", "w3": "3x8 @ 20 кг", "w4": "2x10 @ 13 кг", "rpe": "8-9", "step": 2.0}, {"id": 28, "month": "Ноябрь 2026", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Сисси-приседания", "w1": "3x12 @ 40 кг", "w2": "3x12 @ 42.5 кг", "w3": "3x10 @ 45 кг", "w4": "2x12 @ 30 кг", "rpe": "8-9", "step": 2.5}, {"id": 29, "month": "Ноябрь 2026", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Икры со штангой на коленях", "w1": "4x15 @ 35 кг", "w2": "4x15 @ 37.5 кг", "w3": "4x12 @ 40 кг", "w4": "3x15 @ 27.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 30, "month": "Ноябрь 2026", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Скручивания в блоке", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 2.5}, {"id": 31, "month": "Ноябрь 2026", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Подъем ног в висе", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 32, "month": "Ноябрь 2026", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Русские скручивания", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 0}, {"id": 33, "month": "Декабрь 2026", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 34, "month": "Декабрь 2026", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Жим в тренажере Смита", "w1": "4x8 @ 70 кг", "w2": "4x8 @ 72.5 кг", "w3": "4x6 @ 75 кг", "w4": "3x8 @ 55 кг", "rpe": "8-9", "step": 2.5}, {"id": 35, "month": "Декабрь 2026", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Тяга гантели одной рукой", "w1": "4x8 @ 28 кг", "w2": "4x8 @ 30 кг", "w3": "4x6 @ 32 кг", "w4": "3x8 @ 22 кг", "rpe": "8-9", "step": 2.0}, {"id": 36, "month": "Декабрь 2026", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Жим в тренажере сидя", "w1": "4x10 @ 45 кг", "w2": "4x10 @ 47.5 кг", "w3": "4x8 @ 50 кг", "w4": "3x10 @ 35 кг", "rpe": "8-9", "step": 2.5}, {"id": 37, "month": "Декабрь 2026", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Подтягивания обратным хватом", "w1": "4x8", "w2": "4x8", "w3": "4x8", "w4": "3x8", "rpe": "8-9", "step": 0}, {"id": 38, "month": "Декабрь 2026", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания на скамье Скотта", "w1": "3x10 @ 28 кг", "w2": "3x10 @ 30 кг", "w3": "3x8 @ 32.5 кг", "w4": "2x10 @ 22.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 39, "month": "Декабрь 2026", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Шраги со штангой", "w1": "4x12 @ 72.5 кг", "w2": "4x12 @ 75 кг", "w3": "4x10 @ 77.5 кг", "w4": "3x12 @ 57.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 40, "month": "Декабрь 2026", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания запястий со штангой", "w1": "3x15 @ 22 кг", "w2": "3x15 @ 23.5 кг", "w3": "3x12 @ 25 кг", "w4": "2x15 @ 16 кг", "rpe": "8-9", "step": 2.0}, {"id": 41, "month": "Декабрь 2026", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 42, "month": "Декабрь 2026", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Сведения в кроссовере", "w1": "4x10 @ 16 кг", "w2": "4x10 @ 18 кг", "w3": "4x8 @ 20 кг", "w4": "3x10 @ 14 кг", "rpe": "8-9", "step": 2.0}, {"id": 43, "month": "Декабрь 2026", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Тяга нижнего блока", "w1": "4x10 @ 55 кг", "w2": "4x10 @ 57.5 кг", "w3": "4x8 @ 60 кг", "w4": "3x10 @ 45 кг", "rpe": "8-9", "step": 2.5}, {"id": 44, "month": "Декабрь 2026", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Махи в кроссовере", "w1": "4x12 @ 7.5 кг", "w2": "4x12 @ 8.5 кг", "w3": "4x10 @ 10 кг", "w4": "3x12 @ 6 кг", "rpe": "8-9", "step": 2.0}, {"id": 45, "month": "Декабрь 2026", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Французский жим", "w1": "3x10", "w2": "3x10", "w3": "3x10", "w4": "2x10", "rpe": "8-9", "step": 2.5}, {"id": 46, "month": "Декабрь 2026", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Разгибания из-за головы", "w1": "3x12 @ 20 кг", "w2": "3x12 @ 22.5 кг", "w3": "3x10 @ 25 кг", "w4": "2x12 @ 16 кг", "rpe": "8-9", "step": 2.0}, {"id": 47, "month": "Декабрь 2026", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Шраги с гантелями", "w1": "4x12 @ 28 кг", "w2": "4x12 @ 30 кг", "w3": "4x10 @ 32 кг", "w4": "3x12 @ 22 кг", "rpe": "8-9", "step": 2.0}, {"id": 48, "month": "Декабрь 2026", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Прогулка фермера", "w1": "3x30м @ 34 кг", "w2": "3x30м @ 36 кг", "w3": "3x30м @ 38 кг", "w4": "2x30м @ 26 кг", "rpe": "8-9", "step": 2.5}, {"id": 49, "month": "Декабрь 2026", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 50, "month": "Декабрь 2026", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Гакк-приседания", "w1": "4x8 @ 75 кг", "w2": "4x8 @ 80 кг", "w3": "4x6 @ 85 кг", "w4": "3x8 @ 60 кг", "rpe": "8-9", "step": 2.5}, {"id": 51, "month": "Декабрь 2026", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Гудморнинги", "w1": "4x8 @ 50 кг", "w2": "4x8 @ 52.5 кг", "w3": "4x6 @ 55 кг", "w4": "3x8 @ 40 кг", "rpe": "8-9", "step": 2.5}, {"id": 52, "month": "Декабрь 2026", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Болгарские сплит-приседания", "w1": "4x10 @ 18 кг", "w2": "4x10 @ 20 кг", "w3": "4x8 @ 22 кг", "w4": "3x10 @ 14 кг", "rpe": "8-9", "step": 2.5}, {"id": 53, "month": "Декабрь 2026", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Сгибания ног с гантелью", "w1": "3x12 @ 14 кг", "w2": "3x12 @ 16 кг", "w3": "3x10 @ 18 кг", "w4": "2x12 @ 12 кг", "rpe": "8-9", "step": 2.0}, {"id": 54, "month": "Декабрь 2026", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Икры стоя в Смите", "w1": "4x15 @ 62.5 кг", "w2": "4x15 @ 65 кг", "w3": "4x12 @ 67.5 кг", "w4": "3x15 @ 47.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 55, "month": "Декабрь 2026", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Скручивания на римском стуле", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 56, "month": "Декабрь 2026", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Планка", "w1": "3x60 сек", "w2": "3x60 сек", "w3": "3x60 сек", "w4": "2x60 сек", "rpe": "8-9", "step": 0}, {"id": 57, "month": "Декабрь 2026", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 58, "month": "Декабрь 2026", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Тяга с плинтов", "w1": "4x7 @ 95 кг", "w2": "4x6 @ 100 кг", "w3": "4x5 @ 105 кг", "w4": "3x7 @ 80 кг", "rpe": "8-9", "step": 2.5}, {"id": 59, "month": "Декабрь 2026", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Зашагивания на тумбу", "w1": "3x10 @ 16 кг", "w2": "3x10 @ 18 кг", "w3": "3x8 @ 20 кг", "w4": "2x10 @ 13 кг", "rpe": "8-9", "step": 2.0}, {"id": 60, "month": "Декабрь 2026", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Разгибания ног поочередно", "w1": "3x12 @ 22.5 кг", "w2": "3x12 @ 25 кг", "w3": "3x10 @ 27.5 кг", "w4": "2x12 @ 18 кг", "rpe": "8-9", "step": 2.0}, {"id": 61, "month": "Декабрь 2026", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Икры в тренажере сидя", "w1": "4x15 @ 35 кг", "w2": "4x15 @ 37.5 кг", "w3": "4x12 @ 40 кг", "w4": "3x15 @ 27.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 62, "month": "Декабрь 2026", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Подъем ног в висе", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 0}, {"id": 63, "month": "Декабрь 2026", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Подъем ног в висе", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 64, "month": "Декабрь 2026", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Русские скручивания", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 0}, {"id": 65, "month": "Январь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 66, "month": "Январь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Жим штанги лежа", "w1": "4x8 @ 71 кг", "w2": "4x8 @ 73 кг", "w3": "4x6 @ 75.5 кг", "w4": "3x8 @ 57 кг", "rpe": "8-9", "step": 2.5}, {"id": 67, "month": "Январь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Тяга штанги в наклоне", "w1": "4x8 @ 62.5 кг", "w2": "4x8 @ 65 кг", "w3": "4x6 @ 67.5 кг", "w4": "3x8 @ 50 кг", "rpe": "8-9", "step": 2.5}, {"id": 68, "month": "Январь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Жим гантелей сидя", "w1": "4x10 @ 21 кг", "w2": "4x10 @ 23 кг", "w3": "4x8 @ 25 кг", "w4": "3x10 @ 17 кг", "rpe": "8-9", "step": 2.0}, {"id": 69, "month": "Январь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Подтягивания", "w1": "4x8", "w2": "4x8", "w3": "4x8", "w4": "3x8", "rpe": "8-9", "step": 0}, {"id": 70, "month": "Январь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания со штангой", "w1": "3x10 @ 30 кг", "w2": "3x10 @ 32.5 кг", "w3": "3x10 @ 35 кг", "w4": "2x10 @ 25 кг", "rpe": "8-9", "step": 2.0}, {"id": 71, "month": "Январь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Шраги со штангой", "w1": "4x12 @ 72.5 кг", "w2": "4x12 @ 75 кг", "w3": "4x10 @ 77.5 кг", "w4": "3x12 @ 57.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 72, "month": "Январь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания запястий со штангой", "w1": "3x15 @ 22.5 кг", "w2": "3x15 @ 23.5 кг", "w3": "3x12 @ 25 кг", "w4": "2x15 @ 16 кг", "rpe": "8-9", "step": 2.0}, {"id": 73, "month": "Январь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 74, "month": "Январь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Жим гантелей на наклонной", "w1": "4x10 @ 25 кг", "w2": "4x10 @ 27 кг", "w3": "4x8 @ 29 кг", "w4": "3x10 @ 19 кг", "rpe": "8-9", "step": 2.0}, {"id": 75, "month": "Январь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Тяга верхнего блока", "w1": "4x10 @ 54.5 кг", "w2": "4x10 @ 57.5 кг", "w3": "4x8 @ 60 кг", "w4": "3x10 @ 46 кг", "rpe": "8-9", "step": 2.5}, {"id": 76, "month": "Январь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Махи гантелями в стороны", "w1": "4x12 @ 10 кг", "w2": "4x12 @ 11 кг", "w3": "4x12 @ 12 кг", "w4": "3x12 @ 8 кг", "rpe": "8-9", "step": 2.0}, {"id": 77, "month": "Январь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Отжимания на брусьях", "w1": "3x10", "w2": "3x10", "w3": "3x10", "w4": "2x10", "rpe": "8-9", "step": 0}, {"id": 78, "month": "Январь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Разгибания на трицепс", "w1": "3x12 @ 25 кг", "w2": "3x12 @ 27.5 кг", "w3": "3x12 @ 30 кг", "w4": "2x12 @ 20 кг", "rpe": "8-9", "step": 2.0}, {"id": 79, "month": "Январь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Шраги с гантелями", "w1": "4x12 @ 29 кг", "w2": "4x12 @ 31 кг", "w3": "4x10 @ 33 кг", "w4": "3x12 @ 23 кг", "rpe": "8-9", "step": 2.0}, {"id": 80, "month": "Январь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Прогулка фермера", "w1": "3x30м @ 35 кг", "w2": "3x30м @ 35 кг", "w3": "3x30м @ 37 кг", "w4": "2x30м @ 25 кг", "rpe": "8-9", "step": 2.5}, {"id": 81, "month": "Январь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 82, "month": "Январь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Приседания со штангой", "w1": "4x8 @ 90 кг", "w2": "4x8 @ 93 кг", "w3": "4x6 @ 96 кг", "w4": "3x8 @ 74 кг", "rpe": "8-9", "step": 2.5}, {"id": 83, "month": "Январь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Румынская тяга", "w1": "4x8 @ 85 кг", "w2": "4x8 @ 87.5 кг", "w3": "4x6 @ 90 кг", "w4": "3x8 @ 68 кг", "rpe": "8-9", "step": 2.5}, {"id": 84, "month": "Январь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Жим ногами", "w1": "4x10 @ 160 кг", "w2": "4x10 @ 165 кг", "w3": "4x8 @ 170 кг", "w4": "3x10 @ 130 кг", "rpe": "8-9", "step": 2.5}, {"id": 85, "month": "Январь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Сгибания ног в тренажере", "w1": "3x12 @ 38.5 кг", "w2": "3x12 @ 42.5 кг", "w3": "3x10 @ 45 кг", "w4": "2x12 @ 31 кг", "rpe": "8-9", "step": 2.0}, {"id": 86, "month": "Январь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Икры стоя", "w1": "4x15 @ 62.5 кг", "w2": "4x15 @ 65 кг", "w3": "4x12 @ 67.5 кг", "w4": "3x15 @ 47.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 87, "month": "Январь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Скручивания на римском стуле", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 88, "month": "Январь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Планка", "w1": "3x60 сек", "w2": "3x60 сек", "w3": "3x60 сек", "w4": "2x60 сек", "rpe": "8-9", "step": 0}, {"id": 89, "month": "Январь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 90, "month": "Январь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Становая тяга", "w1": "4x7 @ 95 кг", "w2": "4x6 @ 99 кг", "w3": "4x5 @ 102.5 кг", "w4": "3x7 @ 79 кг", "rpe": "8-9", "step": 2.5}, {"id": 91, "month": "Январь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Выпады с гантелями", "w1": "3x10 @ 17 кг", "w2": "3x10 @ 19 кг", "w3": "3x8 @ 21 кг", "w4": "2x10 @ 13 кг", "rpe": "8-9", "step": 2.0}, {"id": 92, "month": "Январь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Разгибания ног", "w1": "3x12 @ 47.5 кг", "w2": "3x12 @ 50 кг", "w3": "3x10 @ 52.5 кг", "w4": "2x12 @ 36 кг", "rpe": "8-9", "step": 2.0}, {"id": 93, "month": "Январь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Икры сидя", "w1": "4x15 @ 37.5 кг", "w2": "4x15 @ 42.5 кг", "w3": "4x12 @ 45 кг", "w4": "3x15 @ 31 кг", "rpe": "8-9", "step": 2.0}, {"id": 94, "month": "Январь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Скручивания", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 0}, {"id": 95, "month": "Январь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Подъем ног в висе", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 96, "month": "Январь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Русские скручивания", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 0}, {"id": 97, "month": "Февраль 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 98, "month": "Февраль 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Жим гантелей лежа", "w1": "4x8 @ 27 кг", "w2": "4x8 @ 29 кг", "w3": "4x6 @ 31 кг", "w4": "3x8 @ 23 кг", "rpe": "8-9", "step": 2.0}, {"id": 99, "month": "Февраль 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Тяга Т-грифа", "w1": "4x8 @ 62.5 кг", "w2": "4x8 @ 65 кг", "w3": "4x6 @ 67.5 кг", "w4": "3x8 @ 50 кг", "rpe": "8-9", "step": 2.5}, {"id": 100, "month": "Февраль 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Армейский жим", "w1": "4x10 @ 41.5 кг", "w2": "4x10 @ 44 кг", "w3": "4x8 @ 46.5 кг", "w4": "3x10 @ 33.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 101, "month": "Февраль 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Тяга верхнего блока", "w1": "4x8", "w2": "4x8", "w3": "4x8", "w4": "3x8", "rpe": "8-9", "step": 2.5}, {"id": 102, "month": "Февраль 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания с гантелями", "w1": "3x10 @ 14 кг", "w2": "3x10 @ 15 кг", "w3": "3x8 @ 16 кг", "w4": "2x10 @ 11 кг", "rpe": "8-9", "step": 2.0}, {"id": 103, "month": "Февраль 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Шраги со штангой", "w1": "4x12 @ 72.5 кг", "w2": "4x12 @ 75 кг", "w3": "4x10 @ 77.5 кг", "w4": "3x12 @ 57.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 104, "month": "Февраль 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания запястий со штангой", "w1": "3x15 @ 22 кг", "w2": "3x15 @ 23.5 кг", "w3": "3x12 @ 26 кг", "w4": "2x15 @ 17 кг", "rpe": "8-9", "step": 2.0}, {"id": 105, "month": "Февраль 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 106, "month": "Февраль 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Жим штанги на наклонной", "w1": "4x10 @ 54.5 кг", "w2": "4x10 @ 57 кг", "w3": "4x8 @ 59.5 кг", "w4": "3x10 @ 41.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 107, "month": "Февраль 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Пуловер в блоке", "w1": "4x10 @ 52 кг", "w2": "4x10 @ 54.5 кг", "w3": "4x8 @ 57 кг", "w4": "3x10 @ 41.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 108, "month": "Февраль 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Тяга штанги к подбородку", "w1": "4x12 @ 23.5 кг", "w2": "4x12 @ 26 кг", "w3": "4x10 @ 28.5 кг", "w4": "3x12 @ 19 кг", "rpe": "8-9", "step": 2.5}, {"id": 109, "month": "Февраль 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Жим лежа узким хватом", "w1": "3x10", "w2": "3x10", "w3": "3x10", "w4": "2x10", "rpe": "8-9", "step": 2.5}, {"id": 110, "month": "Февраль 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Разгибания с канатом", "w1": "3x12 @ 23.5 кг", "w2": "3x12 @ 26 кг", "w3": "3x10 @ 28.5 кг", "w4": "2x12 @ 19 кг", "rpe": "8-9", "step": 2.0}, {"id": 111, "month": "Февраль 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Шраги с гантелями", "w1": "4x12 @ 29 кг", "w2": "4x12 @ 31 кг", "w3": "4x10 @ 33 кг", "w4": "3x12 @ 23 кг", "rpe": "8-9", "step": 2.0}, {"id": 112, "month": "Февраль 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Прогулка фермера", "w1": "3x30м @ 35 кг", "w2": "3x30м @ 35 кг", "w3": "3x30м @ 37 кг", "w4": "2x30м @ 25 кг", "rpe": "8-9", "step": 2.5}, {"id": 113, "month": "Февраль 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 114, "month": "Февраль 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Фронтальные приседания", "w1": "4x8 @ 67.5 кг", "w2": "4x8 @ 70 кг", "w3": "4x6 @ 72.5 кг", "w4": "3x8 @ 52.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 115, "month": "Февраль 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Мертвая тяга", "w1": "4x8 @ 82.5 кг", "w2": "4x8 @ 85 кг", "w3": "4x6 @ 87.5 кг", "w4": "3x8 @ 67 кг", "rpe": "8-9", "step": 2.5}, {"id": 116, "month": "Февраль 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Выпады со штангой", "w1": "4x10 @ 31.5 кг", "w2": "4x10 @ 34 кг", "w3": "4x8 @ 36.5 кг", "w4": "3x10 @ 21.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 117, "month": "Февраль 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Сгибания ног сидя", "w1": "3x12 @ 38 кг", "w2": "3x12 @ 40.5 кг", "w3": "3x10 @ 43 кг", "w4": "2x12 @ 30 кг", "rpe": "8-9", "step": 2.0}, {"id": 118, "month": "Февраль 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Икры в жиме ногами", "w1": "4x15 @ 62.5 кг", "w2": "4x15 @ 65 кг", "w3": "4x12 @ 67.5 кг", "w4": "3x15 @ 47.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 119, "month": "Февраль 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Скручивания на римском стуле", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 120, "month": "Февраль 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Планка", "w1": "3x60 сек", "w2": "3x60 сек", "w3": "3x60 сек", "w4": "2x60 сек", "rpe": "8-9", "step": 0}, {"id": 121, "month": "Февраль 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 122, "month": "Февраль 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Становая тяга сумо", "w1": "4x7 @ 95 кг", "w2": "4x6 @ 99 кг", "w3": "4x5 @ 103 кг", "w4": "3x7 @ 79 кг", "rpe": "8-9", "step": 2.5}, {"id": 123, "month": "Февраль 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Шагающие выпады", "w1": "3x10 @ 17 кг", "w2": "3x10 @ 19 кг", "w3": "3x8 @ 21 кг", "w4": "2x10 @ 14 кг", "rpe": "8-9", "step": 2.0}, {"id": 124, "month": "Февраль 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Сисси-приседания", "w1": "3x12 @ 42 кг", "w2": "3x12 @ 44.5 кг", "w3": "3x10 @ 47 кг", "w4": "2x12 @ 32 кг", "rpe": "8-9", "step": 2.5}, {"id": 125, "month": "Февраль 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Икры со штангой на коленях", "w1": "4x15 @ 37 кг", "w2": "4x15 @ 39.5 кг", "w3": "4x12 @ 42 кг", "w4": "3x15 @ 29 кг", "rpe": "8-9", "step": 2.0}, {"id": 126, "month": "Февраль 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Скручивания в блоке", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 2.5}, {"id": 127, "month": "Февраль 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Подъем ног в висе", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 128, "month": "Февраль 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Русские скручивания", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 0}, {"id": 129, "month": "Март 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 130, "month": "Март 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Жим в тренажере Смита", "w1": "4x8 @ 73 кг", "w2": "4x8 @ 75.5 кг", "w3": "4x6 @ 78 кг", "w4": "3x8 @ 58 кг", "rpe": "8-9", "step": 2.5}, {"id": 131, "month": "Март 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Тяга гантели одной рукой", "w1": "4x8 @ 29 кг", "w2": "4x8 @ 31 кг", "w3": "4x6 @ 33 кг", "w4": "3x8 @ 23 кг", "rpe": "8-9", "step": 2.0}, {"id": 132, "month": "Март 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Жим в тренажере сидя", "w1": "4x10 @ 47.5 кг", "w2": "4x10 @ 50 кг", "w3": "4x8 @ 52.5 кг", "w4": "3x10 @ 37 кг", "rpe": "8-9", "step": 2.5}, {"id": 133, "month": "Март 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Подтягивания обратным хватом", "w1": "4x8", "w2": "4x8", "w3": "4x8", "w4": "3x8", "rpe": "8-9", "step": 0}, {"id": 134, "month": "Март 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания на скамье Скотта", "w1": "3x10 @ 29 кг", "w2": "3x10 @ 31 кг", "w3": "3x8 @ 33.5 кг", "w4": "2x10 @ 23.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 135, "month": "Март 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Шраги со штангой", "w1": "4x12 @ 75 кг", "w2": "4x12 @ 77.5 кг", "w3": "4x10 @ 80 кг", "w4": "3x12 @ 60 кг", "rpe": "8-9", "step": 2.5}, {"id": 136, "month": "Март 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания запястий со штангой", "w1": "3x15 @ 23 кг", "w2": "3x15 @ 24.5 кг", "w3": "3x12 @ 26 кг", "w4": "2x15 @ 17 кг", "rpe": "8-9", "step": 2.0}, {"id": 137, "month": "Март 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 138, "month": "Март 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Сведения в кроссовере", "w1": "4x10 @ 17 кг", "w2": "4x10 @ 19 кг", "w3": "4x8 @ 21 кг", "w4": "3x10 @ 15 кг", "rpe": "8-9", "step": 2.0}, {"id": 139, "month": "Март 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Тяга нижнего блока", "w1": "4x10 @ 57.5 кг", "w2": "4x10 @ 60 кг", "w3": "4x8 @ 62.5 кг", "w4": "3x10 @ 47.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 140, "month": "Март 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Махи в кроссовере", "w1": "4x12 @ 8 кг", "w2": "4x12 @ 9 кг", "w3": "4x10 @ 10.5 кг", "w4": "3x12 @ 6.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 141, "month": "Март 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Французский жим", "w1": "3x10", "w2": "3x10", "w3": "3x10", "w4": "2x10", "rpe": "8-9", "step": 2.5}, {"id": 142, "month": "Март 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Разгибания из-за головы", "w1": "3x12 @ 21 кг", "w2": "3x12 @ 23.5 кг", "w3": "3x10 @ 26 кг", "w4": "2x12 @ 17 кг", "rpe": "8-9", "step": 2.0}, {"id": 143, "month": "Март 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Шраги с гантелями", "w1": "4x12 @ 29 кг", "w2": "4x12 @ 31 кг", "w3": "4x10 @ 33 кг", "w4": "3x12 @ 23 кг", "rpe": "8-9", "step": 2.0}, {"id": 144, "month": "Март 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Прогулка фермера", "w1": "3x30м @ 35 кг", "w2": "3x30м @ 37 кг", "w3": "3x30м @ 39 кг", "w4": "2x30м @ 27 кг", "rpe": "8-9", "step": 2.5}, {"id": 145, "month": "Март 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 146, "month": "Март 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Гакк-приседания", "w1": "4x8 @ 80 кг", "w2": "4x8 @ 85 кг", "w3": "4x6 @ 90 кг", "w4": "3x8 @ 65 кг", "rpe": "8-9", "step": 2.5}, {"id": 147, "month": "Март 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Гудморнинги", "w1": "4x8 @ 52.5 кг", "w2": "4x8 @ 55 кг", "w3": "4x6 @ 57.5 кг", "w4": "3x8 @ 42.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 148, "month": "Март 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Болгарские сплит-приседания", "w1": "4x10 @ 19 кг", "w2": "4x10 @ 21 кг", "w3": "4x8 @ 23 кг", "w4": "3x10 @ 15 кг", "rpe": "8-9", "step": 2.5}, {"id": 149, "month": "Март 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Сгибания ног с гантелью", "w1": "3x12 @ 15 кг", "w2": "3x12 @ 17 кг", "w3": "3x10 @ 19 кг", "w4": "2x12 @ 13 кг", "rpe": "8-9", "step": 2.0}, {"id": 150, "month": "Март 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Икры стоя в Смите", "w1": "4x15 @ 65 кг", "w2": "4x15 @ 67.5 кг", "w3": "4x12 @ 70 кг", "w4": "3x15 @ 50 кг", "rpe": "8-9", "step": 2.0}, {"id": 151, "month": "Март 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Скручивания на римском стуле", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 152, "month": "Март 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Планка", "w1": "3x60 сек", "w2": "3x60 сек", "w3": "3x60 сек", "w4": "2x60 сек", "rpe": "8-9", "step": 0}, {"id": 153, "month": "Март 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 154, "month": "Март 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Тяга с плинтов", "w1": "4x7 @ 100 кг", "w2": "4x6 @ 105 кг", "w3": "4x5 @ 110 кг", "w4": "3x7 @ 85 кг", "rpe": "8-9", "step": 2.5}, {"id": 155, "month": "Март 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Зашагивания на тумбу", "w1": "3x10 @ 17 кг", "w2": "3x10 @ 19 кг", "w3": "3x8 @ 21 кг", "w4": "2x10 @ 14 кг", "rpe": "8-9", "step": 2.0}, {"id": 156, "month": "Март 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Разгибания ног поочередно", "w1": "3x12 @ 23.5 кг", "w2": "3x12 @ 26 кг", "w3": "3x10 @ 28.5 кг", "w4": "2x12 @ 19 кг", "rpe": "8-9", "step": 2.0}, {"id": 157, "month": "Март 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Икры в тренажере сидя", "w1": "4x15 @ 37 кг", "w2": "4x15 @ 39.5 кг", "w3": "4x12 @ 42 кг", "w4": "3x15 @ 29 кг", "rpe": "8-9", "step": 2.0}, {"id": 158, "month": "Март 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Подъем ног в висе", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 0}, {"id": 159, "month": "Март 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Подъем ног в висе", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 160, "month": "Март 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Русские скручивания", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 0}, {"id": 161, "month": "Апрель 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 162, "month": "Апрель 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Жим штанги лежа", "w1": "4x8 @ 74 кг", "w2": "4x8 @ 76 кг", "w3": "4x6 @ 78.5 кг", "w4": "3x8 @ 59.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 163, "month": "Апрель 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Тяга штанги в наклоне", "w1": "4x8 @ 65 кг", "w2": "4x8 @ 67.5 кг", "w3": "4x6 @ 70 кг", "w4": "3x8 @ 52.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 164, "month": "Апрель 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Жим гантелей сидя", "w1": "4x10 @ 22 кг", "w2": "4x10 @ 24 кг", "w3": "4x8 @ 26 кг", "w4": "3x10 @ 18 кг", "rpe": "8-9", "step": 2.0}, {"id": 165, "month": "Апрель 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Подтягивания", "w1": "4x8", "w2": "4x8", "w3": "4x8", "w4": "3x8", "rpe": "8-9", "step": 0}, {"id": 166, "month": "Апрель 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания со штангой", "w1": "3x10 @ 31.5 кг", "w2": "3x10 @ 34 кг", "w3": "3x8 @ 36.5 кг", "w4": "2x10 @ 26.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 167, "month": "Апрель 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Шраги со штангой", "w1": "4x12 @ 75 кг", "w2": "4x12 @ 77.5 кг", "w3": "4x10 @ 80 кг", "w4": "3x12 @ 60 кг", "rpe": "8-9", "step": 2.5}, {"id": 168, "month": "Апрель 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания запястий со штангой", "w1": "3x15 @ 23 кг", "w2": "3x15 @ 24.5 кг", "w3": "3x12 @ 26 кг", "w4": "2x15 @ 17 кг", "rpe": "8-9", "step": 2.0}, {"id": 169, "month": "Апрель 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 170, "month": "Апрель 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Жим гантелей на наклонной", "w1": "4x10 @ 26 кг", "w2": "4x10 @ 28 кг", "w3": "4x8 @ 30 кг", "w4": "3x10 @ 20 кг", "rpe": "8-9", "step": 2.0}, {"id": 171, "month": "Апрель 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Тяга верхнего блока", "w1": "4x10 @ 56.5 кг", "w2": "4x10 @ 59.5 кг", "w3": "4x8 @ 62 кг", "w4": "3x10 @ 48 кг", "rpe": "8-9", "step": 2.5}, {"id": 172, "month": "Апрель 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Махи гантелями в стороны", "w1": "4x12 @ 10.5 кг", "w2": "4x12 @ 11.5 кг", "w3": "4x10 @ 12.5 кг", "w4": "3x12 @ 8.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 173, "month": "Апрель 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Отжимания на брусьях", "w1": "3x10", "w2": "3x10", "w3": "3x10", "w4": "2x10", "rpe": "8-9", "step": 0}, {"id": 174, "month": "Апрель 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Разгибания на трицепс", "w1": "3x12 @ 26.5 кг", "w2": "3x12 @ 29 кг", "w3": "3x10 @ 31.5 кг", "w4": "2x12 @ 21.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 175, "month": "Апрель 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Шраги с гантелями", "w1": "4x12 @ 30 кг", "w2": "4x12 @ 32 кг", "w3": "4x10 @ 34 кг", "w4": "3x12 @ 24 кг", "rpe": "8-9", "step": 2.0}, {"id": 176, "month": "Апрель 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Прогулка фермера", "w1": "3x30м @ 36 кг", "w2": "3x30м @ 36 кг", "w3": "3x30м @ 38 кг", "w4": "2x30м @ 26 кг", "rpe": "8-9", "step": 2.5}, {"id": 177, "month": "Апрель 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 178, "month": "Апрель 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Приседания со штангой", "w1": "4x8 @ 95 кг", "w2": "4x8 @ 98 кг", "w3": "4x6 @ 101 кг", "w4": "3x8 @ 78 кг", "rpe": "8-9", "step": 2.5}, {"id": 179, "month": "Апрель 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Румынская тяга", "w1": "4x8 @ 87.5 кг", "w2": "4x8 @ 90 кг", "w3": "4x6 @ 92.5 кг", "w4": "3x8 @ 70 кг", "rpe": "8-9", "step": 2.5}, {"id": 180, "month": "Апрель 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Жим ногами", "w1": "4x10 @ 170 кг", "w2": "4x10 @ 175 кг", "w3": "4x8 @ 180 кг", "w4": "3x10 @ 140 кг", "rpe": "8-9", "step": 2.5}, {"id": 181, "month": "Апрель 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Сгибания ног в тренажере", "w1": "3x12 @ 41 кг", "w2": "3x12 @ 45 кг", "w3": "3x10 @ 47.5 кг", "w4": "2x12 @ 33 кг", "rpe": "8-9", "step": 2.0}, {"id": 182, "month": "Апрель 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Икры стоя", "w1": "4x15 @ 65 кг", "w2": "4x15 @ 67.5 кг", "w3": "4x12 @ 70 кг", "w4": "3x15 @ 50 кг", "rpe": "8-9", "step": 2.0}, {"id": 183, "month": "Апрель 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Скручивания на римском стуле", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 184, "month": "Апрель 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Планка", "w1": "3x60 сек", "w2": "3x60 сек", "w3": "3x60 сек", "w4": "2x60 сек", "rpe": "8-9", "step": 0}, {"id": 185, "month": "Апрель 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 186, "month": "Апрель 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Становая тяга", "w1": "4x7 @ 100 кг", "w2": "4x6 @ 104 кг", "w3": "4x5 @ 107.5 кг", "w4": "3x7 @ 83 кг", "rpe": "8-9", "step": 2.5}, {"id": 187, "month": "Апрель 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Выпады с гантелями", "w1": "3x10 @ 18 кг", "w2": "3x10 @ 20 кг", "w3": "3x8 @ 22 кг", "w4": "2x10 @ 14 кг", "rpe": "8-9", "step": 2.0}, {"id": 188, "month": "Апрель 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Разгибания ног", "w1": "3x12 @ 50 кг", "w2": "3x12 @ 52.5 кг", "w3": "3x10 @ 55 кг", "w4": "2x12 @ 38 кг", "rpe": "8-9", "step": 2.0}, {"id": 189, "month": "Апрель 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Икры сидя", "w1": "4x15 @ 40 кг", "w2": "4x15 @ 45 кг", "w3": "4x12 @ 47.5 кг", "w4": "3x15 @ 33 кг", "rpe": "8-9", "step": 2.0}, {"id": 190, "month": "Апрель 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Скручивания", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 0}, {"id": 191, "month": "Апрель 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Подъем ног в висе", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 192, "month": "Апрель 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Русские скручивания", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 0}, {"id": 193, "month": "Май 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 194, "month": "Май 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Жим гантелей лежа", "w1": "4x8 @ 28 кг", "w2": "4x8 @ 30 кг", "w3": "4x6 @ 32 кг", "w4": "3x8 @ 24 кг", "rpe": "8-9", "step": 2.0}, {"id": 195, "month": "Май 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Тяга Т-грифа", "w1": "4x8 @ 65 кг", "w2": "4x8 @ 67.5 кг", "w3": "4x6 @ 70 кг", "w4": "3x8 @ 52.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 196, "month": "Май 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Армейский жим", "w1": "4x10 @ 43 кг", "w2": "4x10 @ 45.5 кг", "w3": "4x8 @ 48 кг", "w4": "3x10 @ 35 кг", "rpe": "8-9", "step": 2.5}, {"id": 197, "month": "Май 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Тяга верхнего блока", "w1": "4x8", "w2": "4x8", "w3": "4x8", "w4": "3x8", "rpe": "8-9", "step": 2.5}, {"id": 198, "month": "Май 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания с гантелями", "w1": "3x10 @ 15 кг", "w2": "3x10 @ 15 кг", "w3": "3x8 @ 17 кг", "w4": "2x10 @ 12 кг", "rpe": "8-9", "step": 2.0}, {"id": 199, "month": "Май 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Шраги со штангой", "w1": "4x12 @ 75 кг", "w2": "4x12 @ 77.5 кг", "w3": "4x10 @ 80 кг", "w4": "3x12 @ 60 кг", "rpe": "8-9", "step": 2.5}, {"id": 200, "month": "Май 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания запястий со штангой", "w1": "3x15 @ 23 кг", "w2": "3x15 @ 24.5 кг", "w3": "3x12 @ 27 кг", "w4": "2x15 @ 18 кг", "rpe": "8-9", "step": 2.0}, {"id": 201, "month": "Май 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 202, "month": "Май 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Жим штанги на наклонной", "w1": "4x10 @ 56.5 кг", "w2": "4x10 @ 59 кг", "w3": "4x8 @ 61.5 кг", "w4": "3x10 @ 43 кг", "rpe": "8-9", "step": 2.5}, {"id": 203, "month": "Май 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Пуловер в блоке", "w1": "4x10 @ 54 кг", "w2": "4x10 @ 56.5 кг", "w3": "4x8 @ 59 кг", "w4": "3x10 @ 43 кг", "rpe": "8-9", "step": 2.0}, {"id": 204, "month": "Май 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Тяга штанги к подбородку", "w1": "4x12 @ 24.5 кг", "w2": "4x12 @ 27 кг", "w3": "4x10 @ 29.5 кг", "w4": "3x12 @ 20 кг", "rpe": "8-9", "step": 2.5}, {"id": 205, "month": "Май 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Жим лежа узким хватом", "w1": "3x10", "w2": "3x10", "w3": "3x10", "w4": "2x10", "rpe": "8-9", "step": 2.5}, {"id": 206, "month": "Май 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Разгибания с канатом", "w1": "3x12 @ 24.5 кг", "w2": "3x12 @ 27 кг", "w3": "3x10 @ 29.5 кг", "w4": "2x12 @ 20 кг", "rpe": "8-9", "step": 2.0}, {"id": 207, "month": "Май 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Шраги с гантелями", "w1": "4x12 @ 30 кг", "w2": "4x12 @ 32 кг", "w3": "4x10 @ 34 кг", "w4": "3x12 @ 24 кг", "rpe": "8-9", "step": 2.0}, {"id": 208, "month": "Май 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Прогулка фермера", "w1": "3x30м @ 36 кг", "w2": "3x30м @ 36 кг", "w3": "3x30м @ 38 кг", "w4": "2x30м @ 26 кг", "rpe": "8-9", "step": 2.5}, {"id": 209, "month": "Май 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 210, "month": "Май 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Фронтальные приседания", "w1": "4x8 @ 70 кг", "w2": "4x8 @ 72.5 кг", "w3": "4x6 @ 75 кг", "w4": "3x8 @ 55 кг", "rpe": "8-9", "step": 2.5}, {"id": 211, "month": "Май 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Мертвая тяга", "w1": "4x8 @ 85 кг", "w2": "4x8 @ 87.5 кг", "w3": "4x6 @ 90 кг", "w4": "3x8 @ 69 кг", "rpe": "8-9", "step": 2.5}, {"id": 212, "month": "Май 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Выпады со штангой", "w1": "4x10 @ 33 кг", "w2": "4x10 @ 35.5 кг", "w3": "4x8 @ 38 кг", "w4": "3x10 @ 23 кг", "rpe": "8-9", "step": 2.0}, {"id": 213, "month": "Май 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Сгибания ног сидя", "w1": "3x12 @ 40 кг", "w2": "3x12 @ 42.5 кг", "w3": "3x10 @ 45 кг", "w4": "2x12 @ 32 кг", "rpe": "8-9", "step": 2.0}, {"id": 214, "month": "Май 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Икры в жиме ногами", "w1": "4x15 @ 65 кг", "w2": "4x15 @ 67.5 кг", "w3": "4x12 @ 70 кг", "w4": "3x15 @ 50 кг", "rpe": "8-9", "step": 2.0}, {"id": 215, "month": "Май 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Скручивания на римском стуле", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 216, "month": "Май 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Планка", "w1": "3x60 сек", "w2": "3x60 сек", "w3": "3x60 сек", "w4": "2x60 сек", "rpe": "8-9", "step": 0}, {"id": 217, "month": "Май 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 218, "month": "Май 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Становая тяга сумо", "w1": "4x7 @ 100 кг", "w2": "4x6 @ 104 кг", "w3": "4x5 @ 108 кг", "w4": "3x7 @ 83 кг", "rpe": "8-9", "step": 2.5}, {"id": 219, "month": "Май 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Шагающие выпады", "w1": "3x10 @ 18 кг", "w2": "3x10 @ 20 кг", "w3": "3x8 @ 22 кг", "w4": "2x10 @ 15 кг", "rpe": "8-9", "step": 2.0}, {"id": 220, "month": "Май 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Сисси-приседания", "w1": "3x12 @ 44 кг", "w2": "3x12 @ 46.5 кг", "w3": "3x10 @ 49 кг", "w4": "2x12 @ 34 кг", "rpe": "8-9", "step": 2.5}, {"id": 221, "month": "Май 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Икры со штангой на коленях", "w1": "4x15 @ 39 кг", "w2": "4x15 @ 41.5 кг", "w3": "4x12 @ 44 кг", "w4": "3x15 @ 31 кг", "rpe": "8-9", "step": 2.0}, {"id": 222, "month": "Май 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Скручивания в блоке", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 2.5}, {"id": 223, "month": "Май 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Подъем ног в висе", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 224, "month": "Май 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Русские скручивания", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 0}, {"id": 225, "month": "Июнь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 226, "month": "Июнь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Жим в тренажере Смита", "w1": "4x8 @ 76 кг", "w2": "4x8 @ 78.5 кг", "w3": "4x6 @ 81 кг", "w4": "3x8 @ 61 кг", "rpe": "8-9", "step": 2.5}, {"id": 227, "month": "Июнь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Тяга гантели одной рукой", "w1": "4x8 @ 30 кг", "w2": "4x8 @ 32 кг", "w3": "4x6 @ 34 кг", "w4": "3x8 @ 24 кг", "rpe": "8-9", "step": 2.0}, {"id": 228, "month": "Июнь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Жим в тренажере сидя", "w1": "4x10 @ 50 кг", "w2": "4x10 @ 52.5 кг", "w3": "4x8 @ 55 кг", "w4": "3x10 @ 39 кг", "rpe": "8-9", "step": 2.5}, {"id": 229, "month": "Июнь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Подтягивания обратным хватом", "w1": "4x8", "w2": "4x8", "w3": "4x8", "w4": "3x8", "rpe": "8-9", "step": 0}, {"id": 230, "month": "Июнь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания на скамье Скотта", "w1": "3x10 @ 30 кг", "w2": "3x10 @ 32 кг", "w3": "3x8 @ 34.5 кг", "w4": "2x10 @ 24.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 231, "month": "Июнь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Шраги со штангой", "w1": "4x12 @ 77.5 кг", "w2": "4x12 @ 80 кг", "w3": "4x10 @ 82.5 кг", "w4": "3x12 @ 62.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 232, "month": "Июнь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания запястий со штангой", "w1": "3x15 @ 24 кг", "w2": "3x15 @ 25.5 кг", "w3": "3x12 @ 27 кг", "w4": "2x15 @ 18 кг", "rpe": "8-9", "step": 2.0}, {"id": 233, "month": "Июнь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 234, "month": "Июнь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Сведения в кроссовере", "w1": "4x10 @ 18 кг", "w2": "4x10 @ 20 кг", "w3": "4x8 @ 22 кг", "w4": "3x10 @ 16 кг", "rpe": "8-9", "step": 2.0}, {"id": 235, "month": "Июнь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Тяга нижнего блока", "w1": "4x10 @ 60 кг", "w2": "4x10 @ 62.5 кг", "w3": "4x8 @ 65 кг", "w4": "3x10 @ 50 кг", "rpe": "8-9", "step": 2.5}, {"id": 236, "month": "Июнь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Махи в кроссовере", "w1": "4x12 @ 8.5 кг", "w2": "4x12 @ 9.5 кг", "w3": "4x10 @ 11 кг", "w4": "3x12 @ 7 кг", "rpe": "8-9", "step": 2.0}, {"id": 237, "month": "Июнь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Французский жим", "w1": "3x10", "w2": "3x10", "w3": "3x10", "w4": "2x10", "rpe": "8-9", "step": 2.5}, {"id": 238, "month": "Июнь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Разгибания из-за головы", "w1": "3x12 @ 22 кг", "w2": "3x12 @ 24.5 кг", "w3": "3x10 @ 27 кг", "w4": "2x12 @ 18 кг", "rpe": "8-9", "step": 2.0}, {"id": 239, "month": "Июнь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Шраги с гантелями", "w1": "4x12 @ 30 кг", "w2": "4x12 @ 32 кг", "w3": "4x10 @ 34 кг", "w4": "3x12 @ 24 кг", "rpe": "8-9", "step": 2.0}, {"id": 240, "month": "Июнь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Прогулка фермера", "w1": "3x30м @ 36 кг", "w2": "3x30м @ 38 кг", "w3": "3x30м @ 40 кг", "w4": "2x30м @ 28 кг", "rpe": "8-9", "step": 2.5}, {"id": 241, "month": "Июнь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 242, "month": "Июнь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Гакк-приседания", "w1": "4x8 @ 85 кг", "w2": "4x8 @ 90 кг", "w3": "4x6 @ 95 кг", "w4": "3x8 @ 70 кг", "rpe": "8-9", "step": 2.5}, {"id": 243, "month": "Июнь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Гудморнинги", "w1": "4x8 @ 55 кг", "w2": "4x8 @ 57.5 кг", "w3": "4x6 @ 60 кг", "w4": "3x8 @ 44 кг", "rpe": "8-9", "step": 2.5}, {"id": 244, "month": "Июнь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Болгарские сплит-приседания", "w1": "4x10 @ 20 кг", "w2": "4x10 @ 22 кг", "w3": "4x8 @ 24 кг", "w4": "3x10 @ 16 кг", "rpe": "8-9", "step": 2.5}, {"id": 245, "month": "Июнь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Сгибания ног с гантелью", "w1": "3x12 @ 16 кг", "w2": "3x12 @ 18 кг", "w3": "3x10 @ 20 кг", "w4": "2x12 @ 14 кг", "rpe": "8-9", "step": 2.0}, {"id": 246, "month": "Июнь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Икры стоя в Смите", "w1": "4x15 @ 67.5 кг", "w2": "4x15 @ 70 кг", "w3": "4x12 @ 72.5 кг", "w4": "3x15 @ 52.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 247, "month": "Июнь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Скручивания на римском стуле", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 248, "month": "Июнь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Планка", "w1": "3x60 сек", "w2": "3x60 сек", "w3": "3x60 сек", "w4": "2x60 сек", "rpe": "8-9", "step": 0}, {"id": 249, "month": "Июнь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 250, "month": "Июнь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Тяга с плинтов", "w1": "4x7 @ 105 кг", "w2": "4x6 @ 110 кг", "w3": "4x5 @ 115 кг", "w4": "3x7 @ 90 кг", "rpe": "8-9", "step": 2.5}, {"id": 251, "month": "Июнь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Зашагивания на тумбу", "w1": "3x10 @ 18 кг", "w2": "3x10 @ 20 кг", "w3": "3x8 @ 22 кг", "w4": "2x10 @ 15 кг", "rpe": "8-9", "step": 2.0}, {"id": 252, "month": "Июнь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Разгибания ног поочередно", "w1": "3x12 @ 24.5 кг", "w2": "3x12 @ 27 кг", "w3": "3x10 @ 29.5 кг", "w4": "2x12 @ 20 кг", "rpe": "8-9", "step": 2.0}, {"id": 253, "month": "Июнь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Икры в тренажере сидя", "w1": "4x15 @ 39 кг", "w2": "4x15 @ 41.5 кг", "w3": "4x12 @ 44 кг", "w4": "3x15 @ 31 кг", "rpe": "8-9", "step": 2.0}, {"id": 254, "month": "Июнь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Подъем ног в висе", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 0}, {"id": 255, "month": "Июнь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Подъем ног в висе", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 256, "month": "Июнь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Русские скручивания", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 0}, {"id": 257, "month": "Июль 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 258, "month": "Июль 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Жим штанги лежа", "w1": "4x8 @ 76.5 кг", "w2": "4x8 @ 78.5 кг", "w3": "4x6 @ 81 кг", "w4": "3x8 @ 61.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 259, "month": "Июль 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Тяга штанги в наклоне", "w1": "4x8 @ 67.5 кг", "w2": "4x8 @ 70 кг", "w3": "4x6 @ 72.5 кг", "w4": "3x8 @ 54.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 260, "month": "Июль 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Жим гантелей сидя", "w1": "4x10 @ 24.5 кг", "w2": "4x10 @ 26.5 кг", "w3": "4x8 @ 28.5 кг", "w4": "3x10 @ 20 кг", "rpe": "8-9", "step": 2.0}, {"id": 261, "month": "Июль 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Подтягивания", "w1": "4x8", "w2": "4x8", "w3": "4x8", "w4": "3x8", "rpe": "8-9", "step": 0}, {"id": 262, "month": "Июль 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания со штангой", "w1": "3x10 @ 34 кг", "w2": "3x10 @ 36.5 кг", "w3": "3x8 @ 39 кг", "w4": "2x10 @ 28.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 263, "month": "Июль 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Шраги со штангой", "w1": "4x12 @ 77.5 кг", "w2": "4x12 @ 80 кг", "w3": "4x10 @ 82.5 кг", "w4": "3x12 @ 62 кг", "rpe": "8-9", "step": 2.5}, {"id": 264, "month": "Июль 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания запястий со штангой", "w1": "3x15 @ 25.5 кг", "w2": "3x15 @ 27 кг", "w3": "3x12 @ 28.5 кг", "w4": "2x15 @ 19 кг", "rpe": "8-9", "step": 2.0}, {"id": 265, "month": "Июль 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 266, "month": "Июль 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Жим гантелей на наклонной", "w1": "4x10 @ 27 кг", "w2": "4x10 @ 29 кг", "w3": "4x8 @ 31 кг", "w4": "3x10 @ 21 кг", "rpe": "8-9", "step": 2.0}, {"id": 267, "month": "Июль 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Тяга верхнего блока", "w1": "4x10 @ 58.5 кг", "w2": "4x10 @ 61.5 кг", "w3": "4x8 @ 64 кг", "w4": "3x10 @ 50 кг", "rpe": "8-9", "step": 2.5}, {"id": 268, "month": "Июль 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Махи гантелями в стороны", "w1": "4x12 @ 11 кг", "w2": "4x12 @ 12 кг", "w3": "4x10 @ 13 кг", "w4": "3x12 @ 9 кг", "rpe": "8-9", "step": 2.0}, {"id": 269, "month": "Июль 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Отжимания на брусьях", "w1": "3x10", "w2": "3x10", "w3": "3x10", "w4": "2x10", "rpe": "8-9", "step": 0}, {"id": 270, "month": "Июль 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Разгибания на трицепс", "w1": "3x12 @ 27.5 кг", "w2": "3x12 @ 30 кг", "w3": "3x10 @ 32.5 кг", "w4": "2x12 @ 22.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 271, "month": "Июль 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Шраги с гантелями", "w1": "4x12 @ 31 кг", "w2": "4x12 @ 33 кг", "w3": "4x10 @ 35 кг", "w4": "3x12 @ 25 кг", "rpe": "8-9", "step": 2.0}, {"id": 272, "month": "Июль 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Прогулка фермера", "w1": "3x30м @ 37 кг", "w2": "3x30м @ 37 кг", "w3": "3x30м @ 39 кг", "w4": "2x30м @ 27 кг", "rpe": "8-9", "step": 2.5}, {"id": 273, "month": "Июль 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 274, "month": "Июль 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Приседания со штангой", "w1": "4x8 @ 100 кг", "w2": "4x8 @ 103 кг", "w3": "4x6 @ 106 кг", "w4": "3x8 @ 82 кг", "rpe": "8-9", "step": 2.5}, {"id": 275, "month": "Июль 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Румынская тяга", "w1": "4x8 @ 90 кг", "w2": "4x8 @ 92.5 кг", "w3": "4x6 @ 95 кг", "w4": "3x8 @ 72.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 276, "month": "Июль 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Жим ногами", "w1": "4x10 @ 180 кг", "w2": "4x10 @ 185 кг", "w3": "4x8 @ 190 кг", "w4": "3x10 @ 150 кг", "rpe": "8-9", "step": 2.5}, {"id": 277, "month": "Июль 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Сгибания ног в тренажере", "w1": "3x12 @ 43.5 кг", "w2": "3x12 @ 47.5 кг", "w3": "3x10 @ 50 кг", "w4": "2x12 @ 35 кг", "rpe": "8-9", "step": 2.0}, {"id": 278, "month": "Июль 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Икры стоя", "w1": "4x15 @ 67.5 кг", "w2": "4x15 @ 70 кг", "w3": "4x12 @ 72.5 кг", "w4": "3x15 @ 52.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 279, "month": "Июль 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Скручивания на римском стуле", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 280, "month": "Июль 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Планка", "w1": "3x60 сек", "w2": "3x60 сек", "w3": "3x60 сек", "w4": "2x60 сек", "rpe": "8-9", "step": 0}, {"id": 281, "month": "Июль 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 282, "month": "Июль 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Становая тяга", "w1": "4x7 @ 102.5 кг", "w2": "4x6 @ 106.5 кг", "w3": "4x5 @ 110 кг", "w4": "3x7 @ 85 кг", "rpe": "8-9", "step": 2.5}, {"id": 283, "month": "Июль 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Выпады с гантелями", "w1": "3x10 @ 20.5 кг", "w2": "3x10 @ 22.5 кг", "w3": "3x8 @ 24.5 кг", "w4": "2x10 @ 16 кг", "rpe": "8-9", "step": 2.0}, {"id": 284, "month": "Июль 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Разгибания ног", "w1": "3x12 @ 52.5 кг", "w2": "3x12 @ 55 кг", "w3": "3x10 @ 57.5 кг", "w4": "2x12 @ 40 кг", "rpe": "8-9", "step": 2.0}, {"id": 285, "month": "Июль 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Икры сидя", "w1": "4x15 @ 42.5 кг", "w2": "4x15 @ 47.5 кг", "w3": "4x12 @ 50 кг", "w4": "3x15 @ 35 кг", "rpe": "8-9", "step": 2.0}, {"id": 286, "month": "Июль 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Скручивания", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 0}, {"id": 287, "month": "Июль 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Подъем ног в висе", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 288, "month": "Июль 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Русские скручивания", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 0}, {"id": 289, "month": "Август 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 290, "month": "Август 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Жим гантелей лежа", "w1": "4x8 @ 30.5 кг", "w2": "4x8 @ 32.5 кг", "w3": "4x6 @ 34.5 кг", "w4": "3x8 @ 26 кг", "rpe": "8-9", "step": 2.0}, {"id": 291, "month": "Август 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Тяга Т-грифа", "w1": "4x8 @ 67.5 кг", "w2": "4x8 @ 70 кг", "w3": "4x6 @ 72.5 кг", "w4": "3x8 @ 54.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 292, "month": "Август 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Армейский жим", "w1": "4x10 @ 45.5 кг", "w2": "4x10 @ 48 кг", "w3": "4x8 @ 50.5 кг", "w4": "3x10 @ 37 кг", "rpe": "8-9", "step": 2.5}, {"id": 293, "month": "Август 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Тяга верхнего блока", "w1": "4x8", "w2": "4x8", "w3": "4x8", "w4": "3x8", "rpe": "8-9", "step": 2.5}, {"id": 294, "month": "Август 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания с гантелями", "w1": "3x10 @ 17.5 кг", "w2": "3x10 @ 17.5 кг", "w3": "3x8 @ 19.5 кг", "w4": "2x10 @ 14 кг", "rpe": "8-9", "step": 2.0}, {"id": 295, "month": "Август 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Шраги со штангой", "w1": "4x12 @ 77.5 кг", "w2": "4x12 @ 80 кг", "w3": "4x10 @ 82.5 кг", "w4": "3x12 @ 62 кг", "rpe": "8-9", "step": 2.5}, {"id": 296, "month": "Август 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания запястий со штангой", "w1": "3x15 @ 25.5 кг", "w2": "3x15 @ 27 кг", "w3": "3x12 @ 29.5 кг", "w4": "2x15 @ 20 кг", "rpe": "8-9", "step": 2.0}, {"id": 297, "month": "Август 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 298, "month": "Август 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Жим штанги на наклонной", "w1": "4x10 @ 59 кг", "w2": "4x10 @ 61.5 кг", "w3": "4x8 @ 64 кг", "w4": "3x10 @ 45 кг", "rpe": "8-9", "step": 2.5}, {"id": 299, "month": "Август 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Пуловер в блоке", "w1": "4x10 @ 56.5 кг", "w2": "4x10 @ 59 кг", "w3": "4x8 @ 61.5 кг", "w4": "3x10 @ 45 кг", "rpe": "8-9", "step": 2.0}, {"id": 300, "month": "Август 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Тяга штанги к подбородку", "w1": "4x12 @ 27 кг", "w2": "4x12 @ 29.5 кг", "w3": "4x10 @ 32 кг", "w4": "3x12 @ 22 кг", "rpe": "8-9", "step": 2.5}, {"id": 301, "month": "Август 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Жим лежа узким хватом", "w1": "3x10", "w2": "3x10", "w3": "3x10", "w4": "2x10", "rpe": "8-9", "step": 2.5}, {"id": 302, "month": "Август 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Разгибания с канатом", "w1": "3x12 @ 27 кг", "w2": "3x12 @ 29.5 кг", "w3": "3x10 @ 32 кг", "w4": "2x12 @ 22 кг", "rpe": "8-9", "step": 2.0}, {"id": 303, "month": "Август 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Шраги с гантелями", "w1": "4x12 @ 32.5 кг", "w2": "4x12 @ 34.5 кг", "w3": "4x10 @ 36.5 кг", "w4": "3x12 @ 26 кг", "rpe": "8-9", "step": 2.0}, {"id": 304, "month": "Август 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Прогулка фермера", "w1": "3x30м @ 38.5 кг", "w2": "3x30м @ 38.5 кг", "w3": "3x30м @ 40.5 кг", "w4": "2x30м @ 28 кг", "rpe": "8-9", "step": 2.5}, {"id": 305, "month": "Август 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 306, "month": "Август 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Фронтальные приседания", "w1": "4x8 @ 72.5 кг", "w2": "4x8 @ 75 кг", "w3": "4x6 @ 77.5 кг", "w4": "3x8 @ 57 кг", "rpe": "8-9", "step": 2.5}, {"id": 307, "month": "Август 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Мертвая тяга", "w1": "4x8 @ 87.5 кг", "w2": "4x8 @ 90 кг", "w3": "4x6 @ 92.5 кг", "w4": "3x8 @ 71 кг", "rpe": "8-9", "step": 2.5}, {"id": 308, "month": "Август 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Выпады со штангой", "w1": "4x10 @ 35.5 кг", "w2": "4x10 @ 38 кг", "w3": "4x8 @ 40.5 кг", "w4": "3x10 @ 25 кг", "rpe": "8-9", "step": 2.0}, {"id": 309, "month": "Август 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Сгибания ног сидя", "w1": "3x12 @ 42.5 кг", "w2": "3x12 @ 45 кг", "w3": "3x10 @ 47.5 кг", "w4": "2x12 @ 34 кг", "rpe": "8-9", "step": 2.0}, {"id": 310, "month": "Август 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Икры в жиме ногами", "w1": "4x15 @ 67.5 кг", "w2": "4x15 @ 70 кг", "w3": "4x12 @ 72.5 кг", "w4": "3x15 @ 52 кг", "rpe": "8-9", "step": 2.0}, {"id": 311, "month": "Август 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Скручивания на римском стуле", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 312, "month": "Август 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Планка", "w1": "3x60 сек", "w2": "3x60 сек", "w3": "3x60 сек", "w4": "2x60 сек", "rpe": "8-9", "step": 0}, {"id": 313, "month": "Август 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 314, "month": "Август 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Становая тяга сумо", "w1": "4x7 @ 102.5 кг", "w2": "4x6 @ 106.5 кг", "w3": "4x5 @ 110.5 кг", "w4": "3x7 @ 85 кг", "rpe": "8-9", "step": 2.5}, {"id": 315, "month": "Август 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Шагающие выпады", "w1": "3x10 @ 20.5 кг", "w2": "3x10 @ 22.5 кг", "w3": "3x8 @ 24.5 кг", "w4": "2x10 @ 17 кг", "rpe": "8-9", "step": 2.0}, {"id": 316, "month": "Август 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Сисси-приседания", "w1": "3x12 @ 46.5 кг", "w2": "3x12 @ 49 кг", "w3": "3x10 @ 51.5 кг", "w4": "2x12 @ 36 кг", "rpe": "8-9", "step": 2.5}, {"id": 317, "month": "Август 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Икры со штангой на коленях", "w1": "4x15 @ 41.5 кг", "w2": "4x15 @ 44 кг", "w3": "4x12 @ 46.5 кг", "w4": "3x15 @ 33 кг", "rpe": "8-9", "step": 2.0}, {"id": 318, "month": "Август 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Скручивания в блоке", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 2.5}, {"id": 319, "month": "Август 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Подъем ног в висе", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 320, "month": "Август 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Русские скручивания", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 0}, {"id": 321, "month": "Сентябрь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 322, "month": "Сентябрь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Жим в тренажере Смита", "w1": "4x8 @ 78.5 кг", "w2": "4x8 @ 81 кг", "w3": "4x6 @ 83.5 кг", "w4": "3x8 @ 63 кг", "rpe": "8-9", "step": 2.5}, {"id": 323, "month": "Сентябрь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Тяга гантели одной рукой", "w1": "4x8 @ 32.5 кг", "w2": "4x8 @ 34.5 кг", "w3": "4x6 @ 36.5 кг", "w4": "3x8 @ 26 кг", "rpe": "8-9", "step": 2.0}, {"id": 324, "month": "Сентябрь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Жим в тренажере сидя", "w1": "4x10 @ 52.5 кг", "w2": "4x10 @ 55 кг", "w3": "4x8 @ 57.5 кг", "w4": "3x10 @ 41 кг", "rpe": "8-9", "step": 2.5}, {"id": 325, "month": "Сентябрь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Подтягивания обратным хватом", "w1": "4x8", "w2": "4x8", "w3": "4x8", "w4": "3x8", "rpe": "8-9", "step": 0}, {"id": 326, "month": "Сентябрь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания на скамье Скотта", "w1": "3x10 @ 32.5 кг", "w2": "3x10 @ 34.5 кг", "w3": "3x8 @ 37 кг", "w4": "2x10 @ 26.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 327, "month": "Сентябрь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Шраги со штангой", "w1": "4x12 @ 80 кг", "w2": "4x12 @ 82.5 кг", "w3": "4x10 @ 85 кг", "w4": "3x12 @ 64.5 кг", "rpe": "8-9", "step": 2.5}, {"id": 328, "month": "Сентябрь 2027", "dayIndex": 1, "day": "День 1: Верх (Тяжелый)", "name": "Сгибания запястий со штангой", "w1": "3x15 @ 26.5 кг", "w2": "3x15 @ 28 кг", "w3": "3x12 @ 29.5 кг", "w4": "2x15 @ 20 кг", "rpe": "8-9", "step": 2.0}, {"id": 329, "month": "Сентябрь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 330, "month": "Сентябрь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Сведения в кроссовере", "w1": "4x10 @ 20.5 кг", "w2": "4x10 @ 22.5 кг", "w3": "4x8 @ 24.5 кг", "w4": "3x10 @ 18 кг", "rpe": "8-9", "step": 2.0}, {"id": 331, "month": "Сентябрь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Тяга нижнего блока", "w1": "4x10 @ 62.5 кг", "w2": "4x10 @ 65 кг", "w3": "4x8 @ 67.5 кг", "w4": "3x10 @ 52 кг", "rpe": "8-9", "step": 2.5}, {"id": 332, "month": "Сентябрь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Махи в кроссовере", "w1": "4x12 @ 11 кг", "w2": "4x12 @ 12 кг", "w3": "4x10 @ 13.5 кг", "w4": "3x12 @ 9 кг", "rpe": "8-9", "step": 2.0}, {"id": 333, "month": "Сентябрь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Французский жим", "w1": "3x10", "w2": "3x10", "w3": "3x10", "w4": "2x10", "rpe": "8-9", "step": 2.5}, {"id": 334, "month": "Сентябрь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Разгибания из-за головы", "w1": "3x12 @ 24.5 кг", "w2": "3x12 @ 27 кг", "w3": "3x10 @ 29.5 кг", "w4": "2x12 @ 20 кг", "rpe": "8-9", "step": 2.0}, {"id": 335, "month": "Сентябрь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Шраги с гантелями", "w1": "4x12 @ 32.5 кг", "w2": "4x12 @ 34.5 кг", "w3": "4x10 @ 36.5 кг", "w4": "3x12 @ 26 кг", "rpe": "8-9", "step": 2.0}, {"id": 336, "month": "Сентябрь 2027", "dayIndex": 2, "day": "День 2: Верх (Объемный)", "name": "Прогулка фермера", "w1": "3x30м @ 38.5 кг", "w2": "3x30м @ 40.5 кг", "w3": "3x30м @ 42.5 кг", "w4": "2x30м @ 30 кг", "rpe": "8-9", "step": 2.5}, {"id": 337, "month": "Сентябрь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 338, "month": "Сентябрь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Гакк-приседания", "w1": "4x8 @ 87.5 кг", "w2": "4x8 @ 92.5 кг", "w3": "4x6 @ 97.5 кг", "w4": "3x8 @ 72 кг", "rpe": "8-9", "step": 2.5}, {"id": 339, "month": "Сентябрь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Гудморнинги", "w1": "4x8 @ 57.5 кг", "w2": "4x8 @ 60 кг", "w3": "4x6 @ 62.5 кг", "w4": "3x8 @ 46 кг", "rpe": "8-9", "step": 2.5}, {"id": 340, "month": "Сентябрь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Болгарские сплит-приседания", "w1": "4x10 @ 22.5 кг", "w2": "4x10 @ 24.5 кг", "w3": "4x8 @ 26.5 кг", "w4": "3x10 @ 18 кг", "rpe": "8-9", "step": 2.5}, {"id": 341, "month": "Сентябрь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Сгибания ног с гантелью", "w1": "3x12 @ 18.5 кг", "w2": "3x12 @ 20.5 кг", "w3": "3x10 @ 22.5 кг", "w4": "2x12 @ 16 кг", "rpe": "8-9", "step": 2.0}, {"id": 342, "month": "Сентябрь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Икры стоя в Смите", "w1": "4x15 @ 70 кг", "w2": "4x15 @ 72.5 кг", "w3": "4x12 @ 75 кг", "w4": "3x15 @ 54.5 кг", "rpe": "8-9", "step": 2.0}, {"id": 343, "month": "Сентябрь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Скручивания на римском стуле", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 344, "month": "Сентябрь 2027", "dayIndex": 3, "day": "День 3: Низ (Присед)", "name": "Планка", "w1": "3x60 сек", "w2": "3x60 сек", "w3": "3x60 сек", "w4": "2x60 сек", "rpe": "8-9", "step": 0}, {"id": 345, "month": "Сентябрь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Кардио (Разминка)", "w1": "10 мин", "w2": "10 мин", "w3": "10 мин", "w4": "10 мин", "rpe": "8-9", "step": 0}, {"id": 346, "month": "Сентябрь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Тяга с плинтов", "w1": "4x7 @ 107.5 кг", "w2": "4x6 @ 112.5 кг", "w3": "4x5 @ 117.5 кг", "w4": "3x7 @ 92 кг", "rpe": "8-9", "step": 2.5}, {"id": 347, "month": "Сентябрь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Зашагивания на тумбу", "w1": "3x10 @ 20.5 кг", "w2": "3x10 @ 22.5 кг", "w3": "3x8 @ 24.5 кг", "w4": "2x10 @ 17 кг", "rpe": "8-9", "step": 2.0}, {"id": 348, "month": "Сентябрь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Разгибания ног поочередно", "w1": "3x12 @ 27 кг", "w2": "3x12 @ 29.5 кг", "w3": "3x10 @ 32 кг", "w4": "2x12 @ 22 кг", "rpe": "8-9", "step": 2.0}, {"id": 349, "month": "Сентябрь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Икры в тренажере сидя", "w1": "4x15 @ 41.5 кг", "w2": "4x15 @ 44 кг", "w3": "4x12 @ 46.5 кг", "w4": "3x15 @ 33 кг", "rpe": "8-9", "step": 2.0}, {"id": 350, "month": "Сентябрь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Подъем ног в висе", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 0}, {"id": 351, "month": "Сентябрь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Подъем ног в висе", "w1": "3x15", "w2": "3x15", "w3": "3x15", "w4": "2x15", "rpe": "8-9", "step": 0}, {"id": 352, "month": "Сентябрь 2027", "dayIndex": 4, "day": "День 4: Низ (Тяга)", "name": "Русские скручивания", "w1": "3x20", "w2": "3x20", "w3": "3x20", "w4": "2x20", "rpe": "8-9", "step": 0}];
+const DEFAULT_MONTHS = ["Ноябрь 2026","Декабрь 2026","Январь 2027","Февраль 2027","Март 2027","Апрель 2027","Май 2027","Июнь 2027","Июль 2027","Август 2027","Сентябрь 2027"];
+const DAY_SHORT = {
+  1: { title: "День 1", sub: "Верх (Тяж)" },
+  2: { title: "День 2", sub: "Верх (Объем)" },
+  3: { title: "День 3", sub: "Низ (Присед)" },
+  4: { title: "День 4", sub: "Низ (Тяга)" }
+};
+
+let progChartMode = "all";
+
+let state = {
+  month: "Ноябрь 2026",
+  months: [...DEFAULT_MONTHS],
+  week: 1,
+  dayIndex: 1,
+  plan: [],
+  activeSets: {},
+  logs: [],
+  startDate: "2026-11-16",
+  body: [
+    { date: "2026-11-16", weight: 82.4, fat: 38.7, lean: 50.5 }
+  ],
+  syncQueue: [],
+  gasUrl: ""
+};
+
+function loadState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("recomp_pro_v7_nov16") || "null");
+    if (saved && saved.plan && saved.plan.length >= 352) {
+      state = Object.assign(state, saved);
+      if (!state.months || !state.months.length) {
+        state.months = [...new Set(state.plan.map(p => p.month))];
+      }
+    } else {
+      const prev = JSON.parse(localStorage.getItem("recomp_pro_v6_charts") || localStorage.getItem("recomp_pro_v5_split") || "null");
+      if (prev && prev.gasUrl) {
+        state.gasUrl = prev.gasUrl;
+      }
+      state.month = "Ноябрь 2026";
+      state.week = 1;
+      state.dayIndex = 1;
+      state.logs = [];
+      state.activeSets = {};
+      state.syncQueue = [];
+      state.plan = JSON.parse(JSON.stringify(DEFAULT_PLAN));
+      state.months = [...DEFAULT_MONTHS];
+      saveState();
+    }
+  } catch(e) {
+    state.plan = JSON.parse(JSON.stringify(DEFAULT_PLAN));
+    state.months = [...DEFAULT_MONTHS];
+  }
+}
+
+function saveState() {
+  localStorage.setItem("recomp_pro_v7_nov16", JSON.stringify(state));
+}
+
+function resetPlanToDefault() {
+  state.plan = JSON.parse(JSON.stringify(DEFAULT_PLAN));
+  state.months = [...DEFAULT_MONTHS];
+  state.month = "Ноябрь 2026";
+  state.activeSets = {};
+  saveState();
+  initSelectors();
+  renderWorkout();
+  alert("Базовый план из 12 месяцев восстановлен!");
+}
+
+function parseScheme(schemeStr) {
+  if (!schemeStr) return { sets: 3, reps: 10, weight: 0, raw: "" };
+  const s = String(schemeStr).trim();
+  if (s.includes("мин")) return { sets: 1, reps: parseInt(s)||10, weight: 0, isTime: "мин", raw: s };
+  const m = s.match(/(\d+)\s*[xх]\s*(\d+)(?:\s*@\s*([\d.,]+))?/i);
+  if (m) {
+    return {
+      sets: parseInt(m[1]) || 3,
+      reps: parseInt(m[2]) || 10,
+      weight: m[3] ? parseFloat(m[3].replace(",", ".")) : 0,
+      raw: s
+    };
+  }
+  return { sets: 3, reps: 10, weight: 0, raw: s };
+}
+
+function bumpSchemeWeight(schemeStr, inc) {
+  if (!schemeStr || !inc) return schemeStr;
+  return String(schemeStr).replace(/(\d+\s*[xх]\s*\d+(?:м| сек)?\s*@\s*)([\d.,]+)(\s*кг)/i, (full, p1, wStr, p3) => {
+    const val = parseFloat(wStr.replace(",", ".")) + Number(inc);
+    const cleanVal = Math.round(val * 10) / 10;
+    return p1 + cleanVal + p3;
+  });
+}
+
+function getWeekScheme(ex, week) {
+  return ex["w" + week] || ex.w1 || "3x10";
+}
+
+function getSessionKey(exId) {
+  return `${state.month}_W${state.week}_D${state.dayIndex}_E${exId}`;
+}
+
+function ensureSetsForExercise(ex) {
+  const key = getSessionKey(ex.id);
+  if (!state.activeSets[key] || !state.activeSets[key].length) {
+    const parsed = parseScheme(getWeekScheme(ex, state.week));
+    const arr = [];
+    for (let i = 1; i <= parsed.sets; i++) {
+      arr.push({
+        num: i,
+        type: "#" + i,
+        weight: parsed.weight,
+        reps: parsed.reps,
+        rpe: state.week === 4 ? 7 : 8.5,
+        done: false
+      });
+    }
+    state.activeSets[key] = arr;
+  }
+  return state.activeSets[key];
+}
+
+function getRecommendation(ex) {
+  const parsed = parseScheme(getWeekScheme(ex, state.week));
+  if (state.week === 4) {
+    return { cls: "rec-badge deload", text: `🧊 Неделя разгрузки: работаем планово (${parsed.raw}) с запасом RPE 6–7 для восстановления ЦНС.` };
+  }
+  const hist = state.logs.filter(l => l.name.toLowerCase() === ex.name.toLowerCase());
+  if (!hist.length) {
+    return { cls: "rec-badge", text: `🎯 План по таблице: ${parsed.raw}. Выполните все подходы в целевом диапазоне с RPE 8–9.` };
+  }
+  const last = hist[hist.length - 1];
+  const allHit = last.sets.every(s => s.reps >= parsed.reps);
+  const maxW = Math.max(...last.sets.map(s => Number(s.weight) || 0));
+  const avgRpe = last.sets.reduce((a,b) => a + (Number(b.rpe)||8.5), 0) / last.sets.length;
+  if (allHit && avgRpe <= 8.5 && ex.step > 0) {
+    const nextW = maxW + Number(ex.step);
+    return {
+      cls: "rec-badge",
+      text: `🔥 Все подходы закрыты (${last.sets.map(s=>s.weight+'кг×'+s.reps).join(', ')}). Рекомендация: повысить рабочий вес до ${nextW} кг!`
+    };
+  }
+  return {
+    cls: "rec-badge warn",
+    text: `⚡ Прошлый результат: ${last.sets.map(s=>s.weight+'кг×'+s.reps).join(', ')}. Удерживайте вес ${maxW} кг и добейте целевые повторения во всех подходах.`
+  };
+}
+
+function initSelectors() {
+  if (!state.months || !state.months.length) {
+    state.months = [...new Set(state.plan.map(p => p.month))];
+  }
+  const ms = document.getElementById("monthSelect");
+  ms.innerHTML = state.months.map(m => `<option value="${m}" ${m===state.month?'selected':''}>${m}</option>`).join("");
+
+  const wt = document.getElementById("weekTabs");
+  wt.innerHTML = [1,2,3,4].map(w => `<div class="chip ${state.week===w?'active':''}" onclick="selectWeek(${w})">${w===4?'Нед 4<span>Разгрузка</span>':'Неделя '+w+'<span>Рабочая</span>'}</div>`).join("");
+
+  const dt = document.getElementById("dayTabs");
+  dt.innerHTML = [1,2,3,4].map(d => `<div class="chip ${state.dayIndex===d?'active':''}" onclick="selectDay(${d})">${DAY_SHORT[d].title}<span>${DAY_SHORT[d].sub}</span></div>`).join("");
+}
+
+function onFilterChange() {
+  state.month = document.getElementById("monthSelect").value;
+  saveState();
+  renderWorkout();
+}
+function selectWeek(w) { state.week = w; saveState(); initSelectors(); renderWorkout(); }
+function selectDay(d) { state.dayIndex = d; saveState(); initSelectors(); renderWorkout(); }
+
+function renderWorkout() {
+  const listEl = document.getElementById("exercisesList");
+  const dayExs = state.plan.filter(p => p.month === state.month && p.dayIndex === state.dayIndex);
+
+  let totalSets = 0, doneSets = 0, totalTonnage = 0;
+
+  listEl.innerHTML = dayExs.map(ex => {
+    const sets = ensureSetsForExercise(ex);
+    const rec = getRecommendation(ex);
+    sets.forEach(s => {
+      totalSets++;
+      if (s.done) {
+        doneSets++;
+        totalTonnage += (Number(s.weight) || 0) * (Number(s.reps) || 0);
+      }
+    });
+
+    const rowsHtml = sets.map((s, idx) => `
+      <div class="set-row-grid ${s.done ? 'done' : ''}">
+        <div class="set-num" onclick="cycleSetType(${ex.id}, ${idx})">${s.type}</div>
+        <div class="stepper">
+          <button type="button" class="step-btn" onclick="stepVal(${ex.id}, ${idx}, 'weight', -${ex.step||2.5})">−</button>
+          <input class="set-inp" type="number" step="0.5" value="${s.weight}" onchange="updateSetField(${ex.id}, ${idx}, 'weight', this.value)" />
+          <button type="button" class="step-btn" onclick="stepVal(${ex.id}, ${idx}, 'weight', ${ex.step||2.5})">+</button>
+        </div>
+        <div class="stepper">
+          <button type="button" class="step-btn" onclick="stepVal(${ex.id}, ${idx}, 'reps', -1)">−</button>
+          <input class="set-inp" type="number" step="1" value="${s.reps}" onchange="updateSetField(${ex.id}, ${idx}, 'reps', this.value)" />
+          <button type="button" class="step-btn" onclick="stepVal(${ex.id}, ${idx}, 'reps', 1)">+</button>
+        </div>
+        <div>
+          <input class="rpe-inp" type="number" step="0.5" min="5" max="10" value="${s.rpe}" onchange="updateSetField(${ex.id}, ${idx}, 'rpe', this.value)" />
+        </div>
+        <div>
+          <button type="button" class="check-btn ${s.done ? 'done' : ''}" onclick="toggleSetDone(${ex.id}, ${idx})">✓</button>
+        </div>
+      </div>
+    `).join("");
+
+    return `
+      <div class="ex-card">
+        <div class="ex-head">
+          <div>
+            <div class="ex-title">${ex.name}</div>
+            <div class="ex-meta">${ex.day} • План: <b>${getWeekScheme(ex, state.week)}</b> • Шаг: ${ex.step} кг</div>
+          </div>
+          <button type="button" class="btn-sm" onclick="openEditModal(${ex.id})">🔄 Изм.</button>
+        </div>
+        <div class="${rec.cls}">${rec.text}</div>
+        <div class="sets-header">
+          <div>Сет</div>
+          <div>Вес (кг)</div>
+          <div>Повт.</div>
+          <div>RPE</div>
+          <div>✓</div>
+        </div>
+        <div>${rowsHtml}</div>
+        <div class="set-controls">
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn-sm" onclick="addSetRow(${ex.id})">+ Подход</button>
+            <button type="button" class="btn-sm" onclick="removeSetRow(${ex.id})">− Убрать</button>
+          </div>
+          <span style="font-size:11.5px; color:var(--muted);">Тоннаж: <b>${sets.filter(x=>x.done).reduce((a,b)=>a+(Number(b.weight)||0)*(Number(b.reps)||0),0)} кг</b></span>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  document.getElementById("statSets").textContent = `${doneSets} / ${totalSets}`;
+  document.getElementById("statTonnage").textContent = `${Math.round(totalTonnage)} кг`;
+  document.getElementById("statQueue").textContent = state.syncQueue.length;
+}
+
+function cycleSetType(exId, idx) {
+  const ex = state.plan.find(x => x.id === exId);
+  const sets = ensureSetsForExercise(ex);
+  const cur = sets[idx].type;
+  sets[idx].type = cur.startsWith("#") ? "Разм" : (cur === "Разм" ? "Дроп" : "#" + (idx + 1));
+  saveState(); renderWorkout();
+}
+
+function stepVal(exId, idx, field, delta) {
+  const ex = state.plan.find(x => x.id === exId);
+  const sets = ensureSetsForExercise(ex);
+  const val = Math.max(0, Number((Number(sets[idx][field] || 0) + Number(delta)).toFixed(2)));
+  sets[idx][field] = val;
+  saveState(); renderWorkout();
+}
+
+function updateSetField(exId, idx, field, val) {
+  const ex = state.plan.find(x => x.id === exId);
+  const sets = ensureSetsForExercise(ex);
+  sets[idx][field] = parseFloat(val) || 0;
+  saveState(); renderWorkout();
+}
+
+function toggleSetDone(exId, idx) {
+  const ex = state.plan.find(x => x.id === exId);
+  const sets = ensureSetsForExercise(ex);
+  sets[idx].done = !sets[idx].done;
+
+  if (sets[idx].done) {
+    startTimer(90);
+    const doneList = sets.filter(s => s.done);
+    state.logs.push({
+      date: new Date().toISOString().slice(0,10),
+      month: state.month,
+      week: "Нед " + state.week,
+      day: ex.day,
+      name: ex.name,
+      sets: JSON.parse(JSON.stringify(doneList)),
+      tonnage: doneList.reduce((a,b)=>a+(Number(b.weight)||0)*(Number(b.reps)||0), 0)
+    });
+    state.syncQueue.push({
+      action: "log_set",
+      date: new Date().toISOString().slice(0,10),
+      month: state.month,
+      week: "Нед " + state.week,
+      day: ex.day,
+      exercise: ex.name,
+      setNum: idx + 1,
+      weight: sets[idx].weight,
+      reps: sets[idx].reps,
+      allSets: sets.map(s=>`${s.weight}x${s.reps}`).join("/"),
+      rpe: sets[idx].rpe
+    });
+  }
+  saveState(); renderWorkout();
+}
+
+function addSetRow(exId) {
+  const ex = state.plan.find(x => x.id === exId);
+  const sets = ensureSetsForExercise(ex);
+  const last = sets[sets.length - 1] || { weight: 0, reps: 10, rpe: 8.5 };
+  sets.push({
+    num: sets.length + 1,
+    type: "#" + (sets.length + 1),
+    weight: last.weight,
+    reps: last.reps,
+    rpe: last.rpe,
+    done: false
+  });
+  saveState(); renderWorkout();
+}
+
+function removeSetRow(exId) {
+  const ex = state.plan.find(x => x.id === exId);
+  const sets = ensureSetsForExercise(ex);
+  if (sets.length > 1) { sets.pop(); saveState(); renderWorkout(); }
+}
+
+// EDIT / ADD EXERCISE MODAL
+function openEditModal(exId) {
+  const ex = state.plan.find(x => x.id === exId);
+  document.getElementById("editModalTitle").textContent = "🔄 Заменить упражнение / план";
+  document.getElementById("editExId").value = ex.id;
+  document.getElementById("editExName").value = ex.name;
+  document.getElementById("editExW1").value = ex.w1 || "";
+  document.getElementById("editExW2").value = ex.w2 || "";
+  document.getElementById("editExW3").value = ex.w3 || "";
+  document.getElementById("editExW4").value = ex.w4 || "";
+  document.getElementById("editExStep").value = ex.step;
+  document.getElementById("editModal").classList.add("open");
+}
+
+function openAddExerciseModal() {
+  document.getElementById("editModalTitle").textContent = "➕ Новое упражнение в " + DAY_SHORT[state.dayIndex].title;
+  document.getElementById("editExId").value = "NEW";
+  document.getElementById("editExName").value = "";
+  document.getElementById("editExW1").value = "4x10 @ 40 кг";
+  document.getElementById("editExW2").value = "4x10 @ 42.5 кг";
+  document.getElementById("editExW3").value = "4x8 @ 45 кг";
+  document.getElementById("editExW4").value = "3x10 @ 30 кг";
+  document.getElementById("editExStep").value = 2.5;
+  document.getElementById("editModal").classList.add("open");
+}
+
+function closeEditModal() { document.getElementById("editModal").classList.remove("open"); }
+
+function saveExerciseEdit() {
+  const rawId = document.getElementById("editExId").value;
+  const name = document.getElementById("editExName").value.trim();
+  if (!name) return;
+  const w1 = document.getElementById("editExW1").value.trim() || "3x10";
+  const w2 = document.getElementById("editExW2").value.trim() || w1;
+  const w3 = document.getElementById("editExW3").value.trim() || w2;
+  const w4 = document.getElementById("editExW4").value.trim() || w1;
+  const step = parseFloat(document.getElementById("editExStep").value) || 0;
+
+  if (rawId === "NEW") {
+    const maxId = state.plan.reduce((m, x) => Math.max(m, Number(x.id)||0), 0);
+    const dayTitles = {
+      1: "День 1: Верх (Тяжелый)",
+      2: "День 2: Верх (Объемный)",
+      3: "День 3: Низ (Присед)",
+      4: "День 4: Низ (Тяга)"
+    };
+    state.plan.push({
+      id: maxId + 1,
+      month: state.month,
+      dayIndex: state.dayIndex,
+      day: dayTitles[state.dayIndex],
+      name, w1, w2, w3, w4,
+      rpe: "8-9",
+      step
+    });
+  } else {
+    const id = Number(rawId);
+    const ex = state.plan.find(x => x.id === id);
+    if (ex) {
+      ex.name = name;
+      ex.w1 = w1; ex.w2 = w2; ex.w3 = w3; ex.w4 = w4;
+      ex.step = step;
+      [1,2,3,4].forEach(w => delete state.activeSets[`${state.month}_W${w}_D${state.dayIndex}_E${ex.id}`]);
+    }
+  }
+  saveState();
+  renderWorkout();
+  closeEditModal();
+}
+
+// ADD NEW MONTH MODAL
+function openAddMonthModal() {
+  const sel = document.getElementById("templateMonthSelect");
+  sel.innerHTML = state.months.map(m => `<option value="${m}" ${m===state.month?'selected':''}>${m}</option>`).join("");
+  // Suggest next month name automatically
+  const monthNames = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+  const lastM = state.months[state.months.length - 1] || "Сентябрь 2027";
+  const parts = lastM.split(" ");
+  const mIdx = monthNames.indexOf(parts[0]);
+  let suggested = "Октябрь 2027";
+  if (mIdx !== -1 && parts[1]) {
+    const nextIdx = (mIdx + 1) % 12;
+    const nextYear = nextIdx === 0 ? (parseInt(parts[1]) + 1) : parseInt(parts[1]);
+    suggested = `${monthNames[nextIdx]} ${nextYear}`;
+  }
+  document.getElementById("newMonthName").value = suggested;
+  document.getElementById("addMonthModal").classList.add("open");
+}
+
+function closeAddMonthModal() {
+  document.getElementById("addMonthModal").classList.remove("open");
+}
+
+function confirmAddMonth() {
+  const newName = document.getElementById("newMonthName").value.trim();
+  const tplMonth = document.getElementById("templateMonthSelect").value;
+  const bump = parseFloat(document.getElementById("newMonthBump").value) || 0;
+  if (!newName) return;
+  if (state.months.includes(newName)) {
+    alert("Такой месяц уже есть в списке!");
+    return;
+  }
+  const tplItems = state.plan.filter(p => p.month === tplMonth);
+  let maxId = state.plan.reduce((m, x) => Math.max(m, Number(x.id)||0), 0);
+  tplItems.forEach(item => {
+    maxId++;
+    const inc = item.step > 0 ? bump : 0;
+    state.plan.push({
+      id: maxId,
+      month: newName,
+      dayIndex: item.dayIndex,
+      day: item.day,
+      name: item.name,
+      w1: bumpSchemeWeight(item.w1, inc),
+      w2: bumpSchemeWeight(item.w2, inc),
+      w3: bumpSchemeWeight(item.w3, inc),
+      w4: bumpSchemeWeight(item.w4, inc > 0 ? Math.max(1, inc - 0.5) : 0),
+      rpe: item.rpe || "8-9",
+      step: item.step
+    });
+  });
+  state.months.push(newName);
+  state.month = newName;
+  saveState();
+  initSelectors();
+  renderWorkout();
+  closeAddMonthModal();
+}
+
+// SVG DUAL-LINE CHART GENERATOR
+function buildDualSvgChart(points, key1, key2, color1, color2, unit1, unit2) {
+  if (!points || !points.length) {
+    return `<div style="text-align:center; padding:24px 8px; color:var(--muted); font-size:12px;">Нет точек для построения графика</div>`;
+  }
+  const W = 520, H = 200, padL = 38, padR = 38, padT = 22, padB = 34;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+
+  const vals1 = points.map(p => Number(p[key1]) || 0);
+  const vals2 = key2 ? points.map(p => Number(p[key2]) || 0) : [];
+
+  const min1 = Math.min(...vals1), max1 = Math.max(...vals1);
+  const span1 = (max1 - min1) || Math.max(1, max1 * 0.1);
+  const low1 = Math.max(0, min1 - span1 * 0.15);
+  const high1 = max1 + span1 * 0.15;
+
+  let low2 = 0, high2 = 100;
+  if (key2 && vals2.length) {
+    const min2 = Math.min(...vals2), max2 = Math.max(...vals2);
+    const span2 = (max2 - min2) || Math.max(1, max2 * 0.1);
+    low2 = Math.max(0, min2 - span2 * 0.15);
+    high2 = max2 + span2 * 0.15;
+  }
+
+  const xAt = (i) => points.length === 1 ? (padL + plotW / 2) : (padL + (i / (points.length - 1)) * plotW);
+  const y1At = (v) => padT + plotH - ((v - low1) / (high1 - low1 || 1)) * plotH;
+  const y2At = (v) => padT + plotH - ((v - low2) / (high2 - low2 || 1)) * plotH;
+
+  let gridSvg = "";
+  for (let g = 0; g <= 3; g++) {
+    const gy = padT + (g / 3) * plotH;
+    const v1Label = Math.round((high1 - (g / 3) * (high1 - low1)) * 10) / 10;
+    gridSvg += `<line x1="${padL}" y1="${gy}" x2="${W - padR}" y2="${gy}" stroke="#1e293b" stroke-dasharray="3,3" stroke-width="1" />`;
+    gridSvg += `<text x="${padL - 5}" y="${gy + 3}" fill="#9ca3af" font-size="9.5" text-anchor="end">${v1Label}</text>`;
+    if (key2) {
+      const v2Label = Math.round((high2 - (g / 3) * (high2 - low2)) * 10) / 10;
+      gridSvg += `<text x="${W - padR + 5}" y="${gy + 3}" fill="#9ca3af" font-size="9.5" text-anchor="start">${v2Label}</text>`;
+    }
+  }
+
+  const poly1 = points.map((p, i) => `${xAt(i).toFixed(1)},${y1At(vals1[i]).toFixed(1)}`).join(" ");
+  const area1 = `${xAt(0).toFixed(1)},${padT + plotH} ` + poly1 + ` ${xAt(points.length - 1).toFixed(1)},${padT + plotH}`;
+
+  let poly2Svg = "";
+  if (key2 && vals2.length) {
+    const poly2 = points.map((p, i) => `${xAt(i).toFixed(1)},${y2At(vals2[i]).toFixed(1)}`).join(" ");
+    poly2Svg = `<polyline fill="none" stroke="${color2}" stroke-width="2.2" stroke-dasharray="4,2" points="${poly2}" />`;
+    points.forEach((p, i) => {
+      const cx = xAt(i), cy = y2At(vals2[i]);
+      poly2Svg += `<circle cx="${cx}" cy="${cy}" r="3.2" fill="${color2}" />`;
+    });
+  }
+
+  let dots1Svg = "";
+  const labelStep = Math.max(1, Math.ceil(points.length / 7));
+  points.forEach((p, i) => {
+    const cx = xAt(i), cy = y1At(vals1[i]);
+    dots1Svg += `<circle cx="${cx}" cy="${cy}" r="4" fill="${color1}" stroke="#090d16" stroke-width="1.5" />`;
+    if (i % labelStep === 0 || i === points.length - 1) {
+      dots1Svg += `<text x="${cx}" y="${cy - 7}" fill="${color1}" font-size="9.5" font-weight="700" text-anchor="middle">${vals1[i]}</text>`;
+      dots1Svg += `<text x="${cx}" y="${H - 10}" fill="#9ca3af" font-size="9" text-anchor="middle">${p.label}</text>`;
+    }
+  });
+
+  return `
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%; height:auto; display:block;">
+      <defs>
+        <linearGradient id="grad1_${key1}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="${color1}" stop-opacity="0.32"/>
+          <stop offset="100%" stop-color="${color1}" stop-opacity="0.0"/>
+        </linearGradient>
+      </defs>
+      ${gridSvg}
+      <polygon points="${area1}" fill="url(#grad1_${key1})" />
+      <polyline fill="none" stroke="${color1}" stroke-width="2.6" points="${poly1}" />
+      ${poly2Svg}
+      ${dots1Svg}
+    </svg>
+  `;
+}
+
+// TIMER & WAKE LOCK
+let timerInt = null, timerSec = 0;
+function startTimer(sec) {
+  clearInterval(timerInt);
+  timerSec = sec;
+  updateTimerUI();
+  timerInt = setInterval(() => {
+    timerSec--;
+    updateTimerUI();
+    if (timerSec <= 0) {
+      clearInterval(timerInt);
+      document.getElementById("timerPill").textContent = "🔔 Отдых окончен!";
+    }
+  }, 1000);
+}
+function toggleTimer(sec) {
+  if (timerInt) { clearInterval(timerInt); timerInt = null; document.getElementById("timerPill").textContent = "⏱ 01:30"; }
+  else startTimer(sec);
+}
+function updateTimerUI() {
+  const m = String(Math.floor(timerSec/60)).padStart(2,"0");
+  const s = String(timerSec%60).padStart(2,"0");
+  document.getElementById("timerPill").textContent = `⏱ ${m}:${s}`;
+}
+
+let wakeLockObj = null;
+async function toggleWakeLock() {
+  const btn = document.getElementById("wakeBtn");
+  try {
+    if (!wakeLockObj && "wakeLock" in navigator) {
+      wakeLockObj = await navigator.wakeLock.request("screen");
+      btn.classList.add("active");
+      btn.textContent = "💡 Экран: ВКЛ";
+    } else if (wakeLockObj) {
+      await wakeLockObj.release();
+      wakeLockObj = null;
+      btn.classList.remove("active");
+      btn.textContent = "💡 Экран: АВТО";
+    }
+  } catch(e) { alert("Браузер ограничил удержание экрана: " + e.message); }
+}
+
+// VIEWS
+function switchView(name, btn) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.getElementById("view-" + name).classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  if (name === "progress") initProgressSelector();
+  if (name === "body") renderBodyMetrics();
+}
+
+function setProgChartMode(mode) {
+  progChartMode = mode;
+  document.getElementById("modePlanVsFact").classList.toggle("active", mode === "all");
+  document.getElementById("modeFactOnly").classList.toggle("active", mode === "logs");
+  renderProgressView();
+}
+
+function initProgressSelector() {
+  const sel = document.getElementById("progExSelect");
+  const currentVal = sel.value;
+  const uniqueNames = [...new Set(state.plan.map(p => p.name))].filter(n => !n.toLowerCase().includes("кардио"));
+  sel.innerHTML = uniqueNames.map(n => `<option value="${n}">${n}</option>`).join("");
+  if (currentVal && uniqueNames.includes(currentVal)) sel.value = currentVal;
+  renderProgressView();
+}
+
+function renderProgressView() {
+  const name = document.getElementById("progExSelect").value;
+  const hist = state.logs.filter(l => l.name === name);
+  const planEntries = state.plan.filter(p => p.name === name);
+
+  const chartEl = document.getElementById("progChartSvg");
+  const statsEl = document.getElementById("progStats");
+  const histEl = document.getElementById("progHistory");
+
+  let chartPoints = [];
+  if (progChartMode === "logs" && hist.length > 0) {
+    chartPoints = hist.map(h => ({
+      label: h.date.slice(5),
+      weight: Math.max(...h.sets.map(s => Number(s.weight)||0)),
+      tonnage: h.tonnage || 0
+    }));
+  } else {
+    // Build trajectory across planned months (Week 1, 2, 3 peak weights) + logged sessions
+    planEntries.forEach(pe => {
+      const shortM = pe.month.slice(0,3) + "'" + pe.month.slice(-2);
+      [1, 2, 3].forEach(w => {
+        const p = parseScheme(pe["w" + w]);
+        if (p.weight > 0) {
+          chartPoints.push({
+            label: `${shortM} Н${w}`,
+            weight: p.weight,
+            tonnage: Math.round(p.sets * p.reps * p.weight)
+          });
+        }
+      });
+    });
+    hist.forEach(h => {
+      chartPoints.push({
+        label: "✓" + h.date.slice(5),
+        weight: Math.max(...h.sets.map(s => Number(s.weight)||0)),
+        tonnage: h.tonnage || 0
+      });
+    });
+  }
+
+  chartEl.innerHTML = buildDualSvgChart(chartPoints, "weight", "tonnage", "#f97316", "#10b981", "кг", "кг");
+
+  const bestLoggedTonnage = hist.length ? Math.max(...hist.map(h => h.tonnage || 0)) : 0;
+  const maxPlanWeight = chartPoints.length ? Math.max(...chartPoints.map(p => p.weight || 0)) : 0;
+  statsEl.innerHTML = `Точек на графике: <b>${chartPoints.length}</b> • Пиковый рабочий вес: <b style="color:var(--accent2)">${maxPlanWeight} кг</b> • Выполненных тренировок в логе: <b style="color:var(--green)">${hist.length}</b> (Лучший тоннаж: <b>${bestLoggedTonnage} кг</b>)`;
+
+  if (!hist.length) {
+    histEl.innerHTML = `<div style="font-size:12px; color:var(--muted); padding-top:4px;">Как только вы отметите подходы галочкой ✓ во вкладке «Тренировка», они появятся здесь и добавятся на график с отметкой ✓.</div>`;
+  } else {
+    histEl.innerHTML = hist.slice().reverse().map(h => `
+      <div style="padding:8px 0; border-bottom:1px solid var(--border); font-size:13px;">
+        <b>${h.date}</b> (${h.month}, ${h.week}) — Тоннаж: <b>${h.tonnage} кг</b><br/>
+        <span style="color:var(--muted)">Подходы: ${h.sets.map(s=>`${s.weight}кг×${s.reps} (RPE ${s.rpe})`).join(", ")}</span>
+      </div>
+    `).join("");
+  }
+}
+
+function saveBodyMetric() {
+  const w = parseFloat(document.getElementById("inpBodyWeight").value);
+  const f = parseFloat(document.getElementById("inpBodyFat").value) || 0;
+  if (!w) return;
+  const lean = Number((w * (1 - f/100)).toFixed(1));
+  const rec = { date: new Date().toISOString().slice(0,10), weight: w, fat: f, lean };
+  state.body.push(rec);
+  state.syncQueue.push({ action: "body", ...rec });
+  document.getElementById("inpBodyWeight").value = "";
+  document.getElementById("inpBodyFat").value = "";
+  saveState(); renderBodyMetrics();
+}
+
+function renderBodyMetrics() {
+  const chartEl = document.getElementById("bodyChartSvg");
+  const pts = state.body.map(b => ({
+    label: b.date.slice(5),
+    weight: b.weight,
+    fat: b.fat,
+    lean: b.lean
+  }));
+  chartEl.innerHTML = buildDualSvgChart(pts, "weight", "fat", "#3b82f6", "#f59e0b", "кг", "%");
+
+  const el = document.getElementById("bodyList");
+  el.innerHTML = state.body.slice().reverse().map(b => `
+    <div style="padding:8px 0; border-bottom:1px solid var(--border); font-size:13px;">
+      <b>${b.date}</b> — Вес: <b style="color:#60a5fa">${b.weight} кг</b> • Жир: <b style="color:#fbbf24">${b.fat}%</b> • Сухая масса: <b style="color:var(--green)">${b.lean} кг</b>
+    </div>
+  `).join("");
+}
+
+function saveGasUrl() {
+  state.gasUrl = document.getElementById("gasUrlInp").value.trim();
+  saveState();
+}
+
+async function flushSyncQueue() {
+  const statusEl = document.getElementById("syncStatus");
+  if (!state.gasUrl) { statusEl.textContent = "Укажите URL веб-приложения Google Apps Script выше."; return; }
+  if (!state.syncQueue.length) { statusEl.textContent = "Очередь пуста — все данные уже синхронизированы."; return; }
+  try {
+    statusEl.textContent = "Отправка пакета в Google Таблицу...";
+    await fetch(state.gasUrl, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ items: state.syncQueue })
+    });
+    state.syncQueue = [];
+    saveState(); renderWorkout();
+    statusEl.textContent = "✅ Данные успешно отправлены в вашу Google Таблицу!";
+  } catch(e) {
+    statusEl.textContent = "Ошибка сети: данные сохранены в офлайн-очереди.";
+  }
+}
+
+function downloadSelfHtml() {
+  const blob = new Blob([document.documentElement.outerHTML], { type: "text/html;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "Rekompoziciya_Pro_Tracker-v5.html";
+  a.click();
+}
+
+loadState();
+initSelectors();
+renderWorkout();
+document.getElementById("gasUrlInp").value = state.gasUrl || "";
+</script>
+</body>
+</html>
